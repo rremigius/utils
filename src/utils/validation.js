@@ -1,4 +1,4 @@
-var Utils = window.Utils || {};
+Utils = window.Utils || {};
 (function(Utils) {
     if(!Utils.requireUtils(['isObject', 'isArray', 'isString', 'isNumber', 'isFunction', 'clone', 'capitaliseFirst', 'plural', 'Error'])) {
         return false;
@@ -108,6 +108,11 @@ var Utils = window.Utils || {};
             return messages.join(' ');
         }
     };
+
+    /**
+     * Creates an Error object.
+     * @returns {Utils.Error}
+     */
     Utils.Validity.prototype.createError = function() {
         var message = this.getMessage();
         if(message === undefined) {
@@ -154,6 +159,11 @@ var Utils = window.Utils || {};
         isUndefined: "Must be undefined."
     };
 
+    /**
+     *
+     * @param {Utils.Validity} validity
+     * @returns {boolean}   Whether or not the validity was logged.
+     */
     Utils.logValidity = function(validity) {
         if(!(validity instanceof Utils.Validity)) {
             Utils.logger.error("Could not log validity.", validity);
@@ -181,22 +191,17 @@ var Utils = window.Utils || {};
      *
      * Validates a value, based on the given parameters
      *
+     * Example usage: Utils.validateOne("myVariable", "apple", "isString", "Must be a string", {default: "banana", warn: false});
+     *
      * @param {string} name                     The name of the variable to check.
      * @param value                             The value of the variable to check.
      * @param {string|boolean|function|Utils.Validity} method     Boolean check for validity, or name of util for validation.
-     * @param {string} [message]               [Optional] The message to display when variable is not valid.
+     * @param {string} [message]                [Optional] The message to display when variable is not valid.
      * @param {object} options                  An object of extra option.
      * @param [options.default]                 A default value if given value is invalid. If not provided, validation will fail if invalid value.
-     * @param {boolean} [options.warn]             If false, no warning will be given if default is chosen. Defaults to true.
+     * @param {boolean} [options.warn]          If false, no warning will be given if default is chosen. Defaults to true.
      *
-     * @return {object}     Result object with following properties:
-     *                          name        Name of the variable.
-     *                          original    Given value of the variable.
-     *                          valid       Validated value of the variable.
-     *                          [warning]   [if available] The warning object {message: ...} issued for
-     *                                        this variable.
-     *                          [error]     [if available] The error object {message: ...} issued for
-     *                                        this variable.
+     * @return {Utils.Validity}
      */
     Utils.validateOne = function(name, value, method, message, options) {
         /** @type {Utils.Validity|boolean} */
@@ -279,6 +284,9 @@ var Utils = window.Utils || {};
 
     /**
      * Validates a set of values, based on the given parameters.
+     *
+     * Example usage: Utils.validate("myValidation", {a: ["apple", "isString"]}, "Validation failed.");
+     *
      * @param {string} name             The name by which to identify this validation.
      * @param {object} checks           An object of checks. Where the keys are the names of the variables and the
      *                                  values arrays of parameters that are passed to {@link Utils.validateOne}, prepended by
@@ -286,7 +294,7 @@ var Utils = window.Utils || {};
      * @param {string} [consequence]    [optional] A message to be given if validation fails.
      * @param {function} [callback]     [optional] Callback instead of direct error messages. Callback is called with a Validity object as argument.
      *
-     * @returns {object|boolean}        If validation was passed, an object will be returned containing a the keys
+     * @returns {Utils.Validity}        If validation was passed, an object will be returned containing a the keys
      *                                  of the given checks object, with their validated values.
      *                                  If any of the validations failed, FALSE will be returned.
      */
@@ -338,10 +346,16 @@ var Utils = window.Utils || {};
 
     /**
      * Validates an object, the same way .validate validates isolated values.
-     * @param {string} name
-     * @param {object} obj
-     * @param {object} checks
-     * @param {function} [callback]
+     *
+     * Example usage: Utils.validateObject('myObject', {a: 'apple'}, {a: ['isString']}).
+     *
+     * @param {string} name             The name of the validation.
+     * @param {object} obj              The object to check.
+     * @param {object} checks           An object with for each key to check an array of arguments [method, message, options]
+     *                                  to pass to the validateOne function.
+     * @param {function} [callback]     A function that takes a Validity object as argument.
+     *
+     * @return {Utils.Validity}
      */
     Utils.validateObject = function(name, obj, checks, callback) {
         if(!Utils.isFunction(callback)) {
@@ -403,6 +417,9 @@ var Utils = window.Utils || {};
 
     /**
      * Validates an array of values, using the given validation function.
+     *
+     * Example usage: Utils.validateArray("myArray", ['apple', 'banana', 123], ["isString", {default: 'fruit'}]);
+     *
      * @param {string} name
      * @param {Array} array                 The array to validate.
      * @param {Array|string|function} itemValidation        The validation arguments [method, message, options]
