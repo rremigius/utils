@@ -2,7 +2,7 @@ var Utils = window.Utils || {};
 
 (function(Utils) {
 
-    Utils.requireMethods(['isString']);
+    Utils.requireUtils(['isString']);
 
     Utils.plural = function(string) {
         if(!Utils.isString(string)) {

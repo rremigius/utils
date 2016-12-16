@@ -98,10 +98,10 @@ QUnit.test("Utils.validateObject validates each specified key-value pair in an o
     var valid1 = Utils.validateObject("x", obj, {
         abc: 'isNumber',
         bar: [Utils.instanceof(Bar), "BarMessage"]
-    }, "XMessage");
+    });
     var valid2 = Utils.validateObject("y", obj, {
         abc: 'isString'
-    }, "YMessage.");
+    });
 
     var validityMap1 = valid1.getValidityMap();
 
@@ -114,7 +114,7 @@ QUnit.test("Utils.validateObject validates each specified key-value pair in an o
     assert.notOk('qux' in validityMap1);
 
     assert.equal(valid2.isValid(), false);
-    assert.equal(valid2.getMessage(), "Invalid object for 'y'. YMessage.");
+    assert.ok(Utils.isString(valid2.getMessage()));
 
     assert.equal(valid3.isValid(), true);
     assert.equal(valid3.isCorrected(), true);
@@ -147,4 +147,40 @@ QUnit.test("Utils.validateArray validates each item in an array.", function(asse
     assert.equal(valid3.isValid(), true);
     assert.equal(valid3.isCorrected(), true);
     assert.deepEqual(valid3.getValue(), [1,0,3]);
+});
+
+QUnit.test("Utils.validate calls callback after validation.", function(assert) {
+    var done = TestUtils.async(assert, 1000);
+    assert.expect(1);
+
+    Utils.validate('foo', {
+        a: [1, 'isNumber']
+    }, "SomeConsequence", function(valid) {
+        assert.ok(valid instanceof Utils.Validity);
+        done();
+    });
+});
+
+QUnit.test("Utils.validateObject calls callback after validation.", function(assert) {
+    var done = TestUtils.async(assert, 1000);
+    assert.expect(1);
+
+    Utils.validateObject('foo', {
+        a: 1
+    }, {
+        a: ['isNumber']
+    }, function(valid) {
+        assert.ok(valid instanceof Utils.Validity);
+        done();
+    });
+});
+
+QUnit.test("Utils.validateArray calls callback after validation.", function(assert) {
+    var done = TestUtils.async(assert, 1000);
+    assert.expect(1);
+
+    Utils.validateArray('foo', [1,2,3], ['isNumber'], undefined, undefined, undefined, function(valid) {
+        assert.ok(valid instanceof Utils.Validity);
+        done();
+    });
 });

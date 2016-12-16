@@ -37,5 +37,8 @@ var Utils = window.Utils || {};
     Utils.Error.prototype.toString = function() {
         return this.message;
     };
+    Utils.Error.prototype.getMessage = function() {
+        return this.message;
+    };
 
 })(Utils);

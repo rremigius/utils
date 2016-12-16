@@ -34,7 +34,7 @@ Utils.setLogger = function(logger) {
     Utils.logger = logger;
 };
 
-Utils.requireMethods = function(methods) {
+Utils.requireUtils = function(methods) {
     if(typeof(Utils.get) !== 'function') {
         Utils.logger.error("Could not load utils. Required method 'get' is not available.");
         return false;
