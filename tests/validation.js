@@ -11,57 +11,182 @@ QUnit.test("Utils.instanceof with one argument returns a single-argument functio
     assert.ok(func(new Bar()));
 });
 
-QUnit.test("Utils.validateOne options.", function(assert) {
+QUnit.test("Utils.validateOne with boolean as method returns Validity object with isValid() set to that boolean.", function(assert) {
+    var valid = Utils.validateOne('foo', 1, true);
+    var invalid = Utils.validateOne('foo', 1, false);
+
+    assert.ok(valid instanceof Utils.Validity);
+    assert.equal(valid.getName(), 'foo');
+    assert.equal(valid.isValid(), true);
+    assert.equal(valid.getValue(), 1);
+    assert.equal(valid.getMessage(), undefined);
+
+    assert.ok(invalid instanceof Utils.Validity);
+    assert.equal(invalid.getName(), 'foo');
+    assert.equal(invalid.isValid(), false);
+    assert.equal(invalid.getValue(), undefined);
+    assert.notEqual(invalid.getMessage(), undefined);
+});
+
+QUnit.test("Utils.validateOne with function as method calls the function to validate input and returns Validity object.", function(assert) {
     var __checkTrue = function(val) {
         assert.equal(val, 1);
         return true;
     };
-    var __default0 = function(val) {
+    var __checkFalse = function(val) {
         assert.equal(val, 1);
+        return false;
+    };
+    var valid = Utils.validateOne('foo', 1, __checkTrue);
+    var invalid = Utils.validateOne('foo', 1, __checkFalse);
+
+    assert.ok(valid instanceof Utils.Validity);
+    assert.equal(valid.getName(), 'foo');
+    assert.equal(valid.isValid(), true);
+    assert.equal(valid.getMessage(), undefined);
+    assert.equal(valid.getValue(), 1);
+
+    assert.ok(invalid instanceof Utils.Validity);
+    assert.equal(invalid.getName(), 'foo');
+    assert.equal(invalid.isValid(), false);
+    assert.notEqual(invalid.getMessage(), undefined);
+    assert.equal(invalid.getValue(), undefined);
+});
+
+QUnit.test("Utils.validateOne with Validity object as method uses the validity's isValid state for its own isValid state.", function(assert) {
+    var validValidity = new Utils.Validity('foo', 1, true, "FooMessage");
+    var invalidValidity = new Utils.Validity('foo', 1, false, "FooMessage");
+
+    var valid = Utils.validateOne('foo', 1, validValidity);
+    var invalid = Utils.validateOne('foo', 1, invalidValidity);
+
+    assert.ok(valid instanceof Utils.Validity);
+    assert.equal(valid.getName(), 'foo');
+    assert.equal(valid.isValid(), true);
+    assert.equal(valid.getMessage(), undefined);
+    assert.equal(valid.getValue(), 1);
+
+    assert.ok(invalid instanceof Utils.Validity);
+    assert.equal(invalid.getName(), 'foo');
+    assert.equal(invalid.isValid(), false);
+    assert.notEqual(invalid.getMessage(), undefined);
+    assert.equal(invalid.getValue(), undefined);
+});
+
+QUnit.test("Utils.validateOne with string as method uses the Utils[method] function to validate the given value.", function(assert) {
+    var __checkTrue = function(value) {
+        assert.equal(value, 1);
+        return true;
+    };
+    var __checkFalse = function(value) {
+        assert.equal(value, 1);
+        return false;
+    };
+    TestUtils.replaceMethod(Utils, 'checkTrue', __checkTrue);
+    TestUtils.replaceMethod(Utils, 'checkFalse', __checkFalse);
+
+    var valid = Utils.validateOne('foo', 1, 'checkTrue');
+    var invalid = Utils.validateOne('foo', 1, 'checkFalse');
+
+    assert.ok(valid instanceof Utils.Validity);
+    assert.equal(valid.getName(), 'foo');
+    assert.equal(valid.isValid(), true);
+    assert.equal(valid.getMessage(), undefined);
+    assert.equal(valid.getValue(), 1);
+
+    assert.ok(invalid instanceof Utils.Validity);
+    assert.equal(invalid.getName(), 'foo');
+    assert.equal(invalid.isValid(), false);
+    assert.notEqual(invalid.getMessage(), undefined);
+    assert.equal(invalid.getValue(), undefined);
+
+    TestUtils.resetReplacedMethods();
+});
+
+QUnit.test("Utils.validateOne with object as method calls validateObject to validate the given value.", function(assert) {
+    var value = {a: 1};
+    var valid = Utils.validateOne('foo', value, {a: ['isNumber']});
+    var invalid = Utils.validateOne('foo', value, {a: ['isString']});
+
+    var map = invalid.getValidityMap();
+
+    assert.equal(valid.isValid(), true);
+
+    assert.equal(invalid.isValid(), false);
+    assert.equal(map.a.isValid(), false);
+});
+
+QUnit.test("Utils.validateOne with array as method calls validateArray to validate the given value.", function(assert) {
+    var value = [1,2,3];
+    var valid = Utils.validateOne('foo', value, ['isNumber']);
+    var invalid = Utils.validateOne('foo', value, ['isString']);
+
+    var map = invalid.getValidityMap();
+
+    assert.equal(valid.isValid(), true);
+    assert.equal(invalid.isValid(), false);
+    assert.equal(map[0].isValid(), false);
+    assert.equal(map[1].isValid(), false);
+    assert.equal(map[2].isValid(), false);
+});
+
+QUnit.test("Utils.validateOne with message sets the given message in the Validity object, only if the value was invalid.", function(assert) {
+    var valid = Utils.validateOne('foo', 1, true, 'FooMessage');
+    var invalid = Utils.validateOne('foo', 1, false, 'FooMessage');
+
+    assert.equal(valid.isValid(), true);
+    assert.equal(valid.getMessage(), undefined);
+    assert.equal(invalid.isValid(), false);
+    assert.equal(invalid.getMessage(), 'FooMessage');
+});
+
+QUnit.test("Utils.validateOne with option.default results in valid, corrected value in returned Validity object.", function(assert) {
+    var valid = Utils.validateOne('foo', 1, true, 'FooMessage', {default: 0});
+    var invalid = Utils.validateOne('foo', 1, false, 'FooMessage', {default: 0});
+
+    assert.equal(valid.isValid(), true);
+    assert.equal(valid.getMessage(), undefined);
+    assert.equal(valid.getValue(), 1);
+    assert.equal(valid.isCorrected(), false);
+
+    assert.equal(invalid.isValid(), true);
+    assert.equal(invalid.getMessage(), 'FooMessage');
+    assert.equal(invalid.getValue(), 0);
+    assert.equal(invalid.isCorrected(), true);
+});
+
+QUnit.test("Utils.validateOne with option.default and option.warn=false suppresses warning message when value is corrected.", function(assert) {
+    var invalid1 = Utils.validateOne('foo', 1, false, 'FooMessage', {default: 0});
+    var invalid2 = Utils.validateOne('foo', 1, false, 'FooMessage', {default: 0, warn: false});
+
+    assert.equal(invalid1.isValid(), true);
+    assert.equal(invalid1.getMessage(), 'FooMessage');
+    assert.equal(invalid1.isCorrected(), true);
+    assert.equal(invalid2.isValid(), true);
+    assert.equal(invalid2.getMessage(), undefined);
+    assert.equal(invalid2.isCorrected(), true);
+});
+
+QUnit.test("Utils.validateOne with functions for default/warn executes those functions to evaluate those settings.", function(assert) {
+    var __default = function(val) {
+        assert.equal(val,1);
         return 0;
     };
-    var valid1 = Utils.validateOne('foo', 1, __checkTrue, "FooMessage");
-    var valid2 = Utils.validateOne('foo', 1, 'isNumber');
-    var valid3 = Utils.validateOne('foo', 1, 'isString');
-    var valid4 = Utils.validateOne('foo', 1, 'isString', {default: 0, warn: false});
-    var valid5 = Utils.validateOne('foo', 1, 'isString', "FooMessage", {default: __default0, warn: __checkTrue});
-    var valid6 = Utils.validateOne('foo', {a: 1}, {a: ['isNumber']}, "FooMessage");
-    var valid7 = Utils.validateOne('foo', [1,2,3], ['isNumber']);
+    var __warnTrue = function(val) {
+        assert.equal(val, 1);
+        return true;
+    };
+    var __warnFalse = function(val) {
+        assert.equal(val, 1);
+        return false;
+    };
+    var invalid1 = Utils.validateOne('foo', 1, false, 'FooMessage', {default: __default, warn: __warnTrue});
+    var invalid2 = Utils.validateOne('foo', 1, false, 'FooMessage', {default: __default, warn: __warnFalse});
 
-    assert.equal(valid1.getName(), 'foo');
-
-    assert.ok(valid1 instanceof Utils.Validity);
-    assert.ok(valid2 instanceof Utils.Validity);
-    assert.ok(valid3 instanceof Utils.Validity);
-    assert.ok(valid4 instanceof Utils.Validity);
-    assert.ok(valid5 instanceof Utils.Validity);
-    assert.ok(valid6 instanceof Utils.Validity);
-    assert.ok(valid7 instanceof Utils.Validity);
-
-    assert.equal(valid1.isValid(), true);
-    assert.equal(valid2.isValid(), true);
-    assert.equal(valid3.isValid(), false);
-    assert.equal(valid4.isValid(), true);
-    assert.equal(valid5.isValid(), true);
-    assert.equal(valid6.isValid(), true, "Method is an object, value gets evaluated by validateObject.");
-    assert.equal(valid7.isValid(), true, "Method is an array, value gets evaluated by validateArray.");
-
-    assert.equal(valid1.getMessage(), undefined);
-    assert.equal(valid2.getMessage(), undefined);
-    assert.equal(valid3.getMessage(), "Must be string.");
-    assert.equal(valid4.getMessage(), undefined);
-    assert.equal(valid5.getMessage(), "FooMessage");
-    assert.equal(valid5.getMessage(), "FooMessage");
-    assert.equal(valid6.getMessage(), undefined);
-    assert.equal(valid7.getMessage(), undefined);
-
-    assert.equal(valid1.getValue(), 1);
-    assert.equal(valid2.getValue(), 1);
-    assert.equal(valid3.getValue(), undefined);
-    assert.equal(valid4.getValue(), 0);
-    assert.equal(valid5.getValue(), 0);
-    assert.deepEqual(valid6.getValue(), {a:1});
-    assert.deepEqual(valid7.getValue(), [1,2,3]);
+    assert.equal(invalid1.isValid(), true);
+    assert.equal(invalid1.getMessage(), 'FooMessage');
+    assert.equal(invalid2.isValid(), true);
+    assert.equal(invalid2.getMessage(), undefined);
 });
 
 QUnit.test("Utils.validate executes validateOne for each key-value pair and returns a combined Validity object.", function(assert) {

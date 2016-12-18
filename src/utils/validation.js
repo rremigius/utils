@@ -187,6 +187,13 @@ Utils = window.Utils || {};
         return true;
     };
 
+    Utils.getValidationMessage = function(method) {
+        if(typeof(method) !== 'string') {
+            return undefined;
+        }
+        return Utils._validationMessages[method];
+    };
+
     /**
      *
      * Validates a value, based on the given parameters
@@ -218,9 +225,8 @@ Utils = window.Utils || {};
 
             // If no message is provided, try to find one from validationMessages
             if (!Utils.isString(message)) {
-                if (method in Utils._validationMessages) {
-                    message = Utils._validationMessages[method];
-                } else {
+                message = Utils.getValidationMessage(method);
+                if(message === undefined) {
                     message = "Must be " + method + ".";
                 }
             }
@@ -277,6 +283,8 @@ Utils = window.Utils || {};
                 valid.setValid(false);
                 valid.setMessage(message);
             }
+        } else {
+            valid.setMessage(undefined); // in case a validity object was given with a message
         }
 
         return valid;
