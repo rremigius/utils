@@ -15,13 +15,14 @@ Utils.extendUtils = function(extend, overwrite, ignore) {
     }
 
     for(var i in extend) {
+        if(ignore.indexOf(i) >= 0) {
+            continue;
+        }
         if(i in Utils && overwrite.indexOf(i) < 0) {
             console.error("'" + i + "' already defined in Utils.");
             continue;
         }
-        if(ignore.indexOf(i) < 0) {
-            Utils[i] = extend[i];
-        }
+        Utils[i] = extend[i];
     }
 };
 
