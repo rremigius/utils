@@ -1,6 +1,6 @@
 Utils = window.Utils || {};
 (function(Utils) {
-    if(!Utils.requireUtils(['isObject', 'isArray', 'isString', 'isNumber', 'isFunction', 'clone', 'capitaliseFirst', 'plural', 'Error'])) {
+    if(!Utils.requireUtils(['isObject', 'isArray', 'isString', 'isBoolean', 'isNumber', 'isFunction', 'clone', 'capitaliseFirst', 'plural', 'Error'])) {
         return false;
     }
 
@@ -202,7 +202,7 @@ Utils = window.Utils || {};
      *
      * @param {string} name                     The name of the variable to check.
      * @param value                             The value of the variable to check.
-     * @param {string|boolean|function|Utils.Validity} method     Boolean check for validity, or name of util for validation.
+     * @param method     Boolean check for validity, or name of util for validation.
      * @param {string} [message]                [Optional] The message to display when variable is not valid.
      * @param {object} options                  An object of extra option.
      * @param [options.default]                 A default value if given value is invalid. If not provided, validation will fail if invalid value.
@@ -307,6 +307,14 @@ Utils = window.Utils || {};
      *                                  If any of the validations failed, FALSE will be returned.
      */
     Utils.validate = function(name, checks, consequence, callback) {
+        // Can also be called without a name
+        if(Utils.isObject(name)) {
+            callback = consequence;
+            consequence = checks;
+            checks = name;
+            name = 'Validation';
+        }
+
         var validityMap = {};
         var inputMap = {};
         if(!Utils.isFunction(callback)) {
@@ -366,6 +374,13 @@ Utils = window.Utils || {};
      * @return {Utils.Validity}
      */
     Utils.validateObject = function(name, obj, checks, callback) {
+        if(Utils.isObject(name)) {
+            callback = checks;
+            checks = obj;
+            obj = name;
+            name = 'Object';
+        }
+
         if(!Utils.isFunction(callback)) {
             callback = Utils.logValidity;
         }
@@ -381,8 +396,8 @@ Utils = window.Utils || {};
             var args = Utils.clone(checks[prop]);
             var isArray = Utils.isArray(args);
 
-            // Lazy, single-parameter validation (string or function)
-            if(Utils.isString(args) || Utils.isFunction(args)) {
+            // Lazy, single-parameter validation (string, boolean or function)
+            if(Utils.isString(args) || Utils.isBoolean(args) || Utils.isFunction(args)) {
                 args = [args];
             // Invalid validation
             } else if (!isArray) {
@@ -437,6 +452,16 @@ Utils = window.Utils || {};
      * @param {function} [callback]         [optional] Callback instead of direct error messages. Callback is called with a Validity object as argument.
      */
     Utils.validateArray = function(name, array, itemValidation, minLength, maxLength, itemType, callback) {
+        if(Utils.isArray(name)) {
+            callback = itemType;
+            itemType = maxLength;
+            maxLength = minLength;
+            minLength = itemValidation;
+            itemValidation = array;
+            array = name;
+            name = 'Array';
+        }
+
         if(!Utils.isFunction(callback)) {
             callback = Utils.logValidity;
         }

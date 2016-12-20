@@ -309,3 +309,34 @@ QUnit.test("Utils.validateArray calls callback after validation.", function(asse
         done();
     });
 });
+
+QUnit.test("Utils.validateObject can be called without a name.", function(assert) {
+    var obj = {a:1};
+    var check = Utils.validateObject(obj, {a:true});
+
+    assert.ok(check instanceof Utils.Validity);
+    assert.equal(check.isValid(), true);
+});
+
+QUnit.test("Utils.validateArray can be called without a name.", function(assert) {
+    var arr = [1,2,3];
+    var check = Utils.validateArray(arr, true);
+
+    assert.ok(check instanceof Utils.Validity);
+    assert.equal(check.isValid(), true);
+});
+
+QUnit.test("Utils.validate can be called without a name.", function(assert) {
+    var check = Utils.validate({
+        a: [1, true]
+    });
+
+    assert.ok(check instanceof Utils.Validity);
+    assert.equal(check.isValid(), true);
+});
+
+QUnit.test("Utils.validateOne can be called without a message.", function(assert) {
+    var check = Utils.validateOne('foo', 1, false, {default: 0});
+    assert.ok(check instanceof Utils.Validity);
+    assert.equal(check.isValid(), true);
+});
