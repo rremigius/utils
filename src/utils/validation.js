@@ -329,7 +329,7 @@ Utils = window.Utils || {};
             for(var i in checks) {
                 checks[i].unshift(i);
                 validityMap[i] = Utils.validateOne.apply(Utils, checks[i]);
-                inputMap = checks[i][0];
+                inputMap[i] = checks[i][1];
             }
         } else {
             var invalidChecksMessage = "Parameter 'checks' must be object. " + consequence;
@@ -354,7 +354,7 @@ Utils = window.Utils || {};
             validityMap: validityMap
         });
         if(!isValid) {
-            valid.setMessage("Invalid input for '" + name + "'.");
+            valid.setMessage("Validation failed for '" + name + "'.");
         }
         callback(valid);
         return valid;
@@ -557,6 +557,15 @@ Utils = window.Utils || {};
         } else {
             return Utils.isObject(checkClass) && arg instanceof checkClass;
         }
+    };
+
+    /**
+     * Checks whether the given argument is defined, and not null.
+     * @param v
+     * @returns {boolean}
+     */
+    Utils.def = function (v) {
+        return ((v !== null) && (v !== undefined));
     };
 
 })(window.Utils);

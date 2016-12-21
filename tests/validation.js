@@ -340,3 +340,13 @@ QUnit.test("Utils.validateOne can be called without a message.", function(assert
     assert.ok(check instanceof Utils.Validity);
     assert.equal(check.isValid(), true);
 });
+
+QUnit.test("Utils.def returns false for null and undefined values, and true otherwise.", function(assert) {
+    assert.equal(Utils.def(undefined), false);
+    assert.equal(Utils.def(null), false);
+    assert.equal(Utils.def(0), true);
+    assert.equal(Utils.def(false), true);
+    assert.equal(Utils.def({}), true);
+    assert.equal(Utils.def([]), true);
+    assert.equal(Utils.def(""), true);
+});
