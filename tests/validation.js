@@ -69,7 +69,7 @@ QUnit.test("Utils.validateOne with Validity object as method uses the validity's
     assert.ok(invalid instanceof Utils.Validity);
     assert.equal(invalid.getName(), 'foo');
     assert.equal(invalid.isValid(), false);
-    assert.notEqual(invalid.getMessage(), undefined);
+    assert.equal(invalid.getMessage(), 'FooMessage');
     assert.equal(invalid.getValue(), undefined);
 });
 
@@ -274,6 +274,18 @@ QUnit.test("Utils.validateArray validates each item in an array.", function(asse
     assert.deepEqual(valid3.getValue(), [1,0,3]);
 });
 
+QUnit.test("Utils.validateArray with minLength and maxLength in options checks if the array is within these dimensions.", function(assert) {
+    var arr1 = [1,2,3];
+    var valid = Utils.validateArray('arr1', arr1, ['isNumber'], "FooMessage", {minLength: 1, maxLength: 5});
+    var invalid1 = Utils.validateArray('arr1', arr1, ['isString'], "FooMessage", {minLength: 4});
+	var invalid2 = Utils.validateArray('arr1', arr1, ['isString'], "FooMessage", {minLength: 0, maxLength: 2});
+
+	assert.equal(valid.isValid(), true);
+
+	assert.equal(invalid1.isValid(), false);
+	assert.equal(invalid2.isValid(), false);
+});
+
 QUnit.test("Utils.validate calls callback after validation.", function(assert) {
     var done = TestUtils.async(assert, 1000);
     assert.expect(1);
@@ -304,7 +316,7 @@ QUnit.test("Utils.validateArray calls callback after validation.", function(asse
     var done = TestUtils.async(assert, 1000);
     assert.expect(1);
 
-    Utils.validateArray('foo', [1,2,3], ['isNumber'], undefined, undefined, undefined, function(valid) {
+    Utils.validateArray('foo', [1,2,3], ['isNumber'], {}, function(valid) {
         assert.ok(valid instanceof Utils.Validity);
         done();
     });
@@ -324,6 +336,14 @@ QUnit.test("Utils.validateArray can be called without a name.", function(assert)
 
     assert.ok(check instanceof Utils.Validity);
     assert.equal(check.isValid(), true);
+});
+
+QUnit.test("Utils.validateArray can be called without a message.", function(assert) {
+	var arr = [1,2,3];
+	var check = Utils.validateArray('arr', arr, ['isString'], {minLength: 0, maxLength: 2});
+
+	assert.ok(check instanceof Utils.Validity);
+	assert.equal(check.isValid(), false);
 });
 
 QUnit.test("Utils.validate can be called without a name.", function(assert) {

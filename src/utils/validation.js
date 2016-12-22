@@ -257,10 +257,10 @@ Utils = window.Utils || {};
             valid = method;
         // validateArray
         } else if (Utils.isArray(method)) {
-            valid = Utils.validateArray(name, value, method);
+            valid = Utils.validateArray(name, value, method, false);
         // validateObject
         } else if (Utils.isObject(method)) {
-            valid = Utils.validateObject(name, value, method);
+            valid = Utils.validateObject(name, value, method, false);
         // Boolean validation
         } else {
             valid = method === true;
@@ -272,6 +272,9 @@ Utils = window.Utils || {};
 
         // Feedback
         if(!valid.isValid()) {
+			if(message === undefined) {
+				message = 'Invalid.';
+			}
             if(Utils.isObject(options) && 'default' in options) {
                 if(Utils.isFunction(options.default)) {
                     var def = options.default.apply(Utils, [value]);
@@ -282,7 +285,7 @@ Utils = window.Utils || {};
 
                 var warn = Utils.get(options, 'warn');
                 var __warn = Utils.isFunction(warn) ? warn : function() { return warn !== false; };
-                if(__warn(value) !== false) {
+                if(__warn(value) !== false && valid.getMessage() === undefined) {
                     valid.setMessage(message);
                 }
                 valid.setValid(true);
@@ -292,10 +295,9 @@ Utils = window.Utils || {};
 					valid.setMessage(message);
 				}
             }
-			if(valid.getMessage() === undefined) {
-				valid.setMessage("Invalid.");
-			}
-        }
+        } else if(!valid.isCorrected()) {
+			valid.setMessage(undefined);
+		}
 
         return valid;
     };
@@ -327,9 +329,7 @@ Utils = window.Utils || {};
 
         var validityMap = {};
         var inputMap = {};
-        if(!Utils.isFunction(callback)) {
-            callback = Utils.logValidity;
-        }
+		callback = Utils.ensure(callback, Utils.isFunction, callback === false ? function(){} : Utils.logValidity);
 
         if(consequence === undefined) {
             consequence = '';
@@ -380,18 +380,24 @@ Utils = window.Utils || {};
      * @param {object} obj              The object to check.
      * @param {object} checks           An object with for each key to check an array of arguments [method, message, options]
      *                                  to pass to the validateOne function.
+	 * @param {string} message			Message to add to ValidityObject in case of invalid object.
      * @param {function} [callback]     A function that takes a Validity object as argument.
      *
      * @return {Utils.Validity}
      */
-    Utils.validateObject = function(name, obj, checks, callback) {
+    Utils.validateObject = function(name, obj, checks, message, callback) {
         if(Utils.isObject(name)) {
-            callback = checks;
+            callback = message;
+			message = checks;
             checks = obj;
             obj = name;
             name = 'Object';
         }
-        callback = Utils.ensure(callback, Utils.isFunction, function(){});
+        if(Utils.isFunction(message)) {
+			callback = message;
+			message = undefined;
+		}
+        callback = Utils.ensure(callback, Utils.isFunction, callback === false ? function(){} : Utils.logValidity);
 
         if(!Utils.isObject(checks)) {
             var invalid = new Utils.Validity(name, checks, false, "Invalid 'checks' parameter. Must be object.");
@@ -424,11 +430,13 @@ Utils = window.Utils || {};
             validityMap: validityMap
         });
         var corrected = undefined;
-        var invalidMessage = "Invalid object for '" + name + "'.";
+		if(message === undefined) {
+			message = "Invalid object for '" + name + "'.";
+		}
         for(var prop in validityMap) {
             if(!validityMap[prop].isValid()) {
                 valid.setValid(false);
-                valid.setMessage(invalidMessage);
+                valid.setMessage(message);
             }
             if(validityMap[prop].isCorrected()) {
                 if(corrected === undefined) {
@@ -439,7 +447,7 @@ Utils = window.Utils || {};
             }
         }
         if(valid.isCorrected()) {
-            valid.setMessage(invalidMessage);
+            valid.setMessage(message);
         }
         valid.setType('object');
 
@@ -455,23 +463,29 @@ Utils = window.Utils || {};
      * @param {string} name
      * @param {Array} array                 The array to validate.
      * @param {Array|string|function} itemValidation        The validation arguments [method, message, options]
-     * @param {number} [minLength=0]        [optional] The minimum length of the array.
-     * @param {number} [maxLength=Infinity] [optional] The maximum length of the array.
-     * @param {string} [itemType='Item']    [optional] What to call an item.
+     * @param {number} [options.minLength=0]        [optional] The minimum length of the array.
+     * @param {number} [options.maxLength=Infinity] [optional] The maximum length of the array.
+     * @param {string} [options.itemType='Item']    [optional] What to call an item.
      * @param {function} [callback]         [optional] Callback instead of direct error messages. Callback is called with a Validity object as argument.
      */
-    Utils.validateArray = function(name, array, itemValidation, minLength, maxLength, itemType, callback) {
+    Utils.validateArray = function(name, array, itemValidation, message, options, callback) {
         if(Utils.isArray(name)) {
-            callback = itemType;
-            itemType = maxLength;
-            maxLength = minLength;
-            minLength = itemValidation;
+            callback = options;
+			options = message;
+            message = itemValidation;
             itemValidation = array;
             array = name;
             name = 'Array';
         }
+        if(Utils.isObject(message)){
+			callback = options;
+			options = message;
+		}
+		var minLength = _.get(options, 'minLength');
+		var maxLength = _.get(options, 'maxLength');
+		var itemType = _.get(options, 'itemType');
 
-		callback = Utils.ensure(callback, Utils.isFunction, function(){});
+		callback = Utils.ensure(callback, Utils.isFunction, callback === false ? function(){} : Utils.logValidity);
 
         if(!Utils.isArray(array)) {
             var invalid = new Utils.Validity({name: name, input: array, valid: false, message: "Must be an array", type: 'array'});

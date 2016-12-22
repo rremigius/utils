@@ -175,7 +175,7 @@ var Utils = window.Utils || {};
             return Utils.objectToString(value, maxLength);
         }
 
-        return (""+value).substr(0, maxLength);
+        return Utils.truncateString(""+value, maxLength);
     };
 
 })(Utils);
