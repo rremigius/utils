@@ -417,3 +417,13 @@ QUnit.test("Utils.ensurePath creates a value at the given path if the current va
 	assert.equal(obj2.b.c, 123);
 	assert.equal(obj3.b.c, 0);
 });
+
+QUnit.test("Utils.isStringOrNumber returns true for all strings and numbers, false for other values.", function(assert) {
+	assert.equal(Utils.isStringOrNumber('foo'), true);
+	assert.equal(Utils.isStringOrNumber(123), true);
+	assert.equal(Utils.isStringOrNumber(undefined), false);
+	assert.equal(Utils.isStringOrNumber(null), false);
+	assert.equal(Utils.isStringOrNumber({}), false);
+	assert.equal(Utils.isStringOrNumber([]), false);
+	assert.equal(Utils.isStringOrNumber(function(){}), false);
+});

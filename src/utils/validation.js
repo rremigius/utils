@@ -106,7 +106,7 @@ Utils = window.Utils || {};
 
         var messages = [];
         messages.push(why);
-        messages.push("Given: ");
+        messages.push("Value: ");
         messages.push(value);
         if(this.isValid() && this.isCorrected()) {
             messages.push(". Using default:");
@@ -124,25 +124,30 @@ Utils = window.Utils || {};
      * Creates an Error object.
      * @returns {Utils.Error}
      */
-    Utils.Validity.prototype.createError = function() {
+    Utils.Validity.prototype.createError = function(includeErrorMap) {
         var message = this.getMessage();
         if(message === undefined) {
             return null;
         }
+
+        var code = 'validation-' + this.getType();
         var error = new Utils.Error({
-            message: this.createBadValueMessage()
+            message	: this.createBadValueMessage(),
+			code	: code
         });
-        var validityMap = this.getValidityMap();
-        if(_.isObject(validityMap)) {
-            var errorMap = {};
-            for(var i in validityMap) {
-                var subError = validityMap[i].createError();
-                if(subError instanceof Utils.Error) {
-                    errorMap[i] = subError;
-                }
-            }
-            error.errorMap = errorMap;
-        }
+		if(includeErrorMap !== false) {
+			var validityMap = this.getValidityMap();
+			if(_.isObject(validityMap)) {
+				var errorMap = {};
+				for(var i in validityMap) {
+					var subError = validityMap[i].createError();
+					if(subError instanceof Utils.Error) {
+						errorMap[i] = subError;
+					}
+				}
+				error.errorMap = errorMap;
+			}
+		}
 
         return error;
     };
@@ -167,7 +172,8 @@ Utils = window.Utils || {};
         isRegExp: "Must be RegExp.",
         isString: "Must be string.",
         isTypedArray: "Must be typed array.",
-        isUndefined: "Must be undefined."
+        isUndefined: "Must be undefined.",
+		isStringOrNumber: "Must be string or number."
     };
 
     /**
@@ -181,7 +187,7 @@ Utils = window.Utils || {};
             return false;
         }
 
-        if(validity.isValid() && !validity.isCorrected()) {
+        if(validity.isValid() && validity.getMessage() === undefined) {
             return false;
         }
 
@@ -197,6 +203,18 @@ Utils = window.Utils || {};
 
         return true;
     };
+
+    Utils.setValidationMessage = function(method, message) {
+		if(typeof(method) !== 'string') {
+			Utils.Log.error("Validation method argument must be string.");
+			return false;
+		}
+		if(typeof(message) !== 'string') {
+			Utils.Log.error("Validation method message argument must be string.");
+			return false;
+		}
+		Utils._validationMessages[method] = message;
+	};
 
     Utils.getValidationMessage = function(method) {
         if(typeof(method) !== 'string') {
@@ -257,10 +275,10 @@ Utils = window.Utils || {};
             valid = method;
         // validateArray
         } else if (Utils.isArray(method)) {
-            valid = Utils.validateArray(name, value, method, false, _.get(options, 'array'));
+            valid = Utils.validateArray(name, value, method, undefined, _.get(options, 'array'), false);
         // validateObject
         } else if (Utils.isObject(method)) {
-            valid = Utils.validateObject(name, value, method, false);
+            valid = Utils.validateObject(name, value, method, undefined, false);
         // Boolean validation
         } else {
             valid = method === true;
@@ -285,9 +303,13 @@ Utils = window.Utils || {};
 
                 var warn = Utils.get(options, 'warn');
                 var __warn = Utils.isFunction(warn) ? warn : function() { return warn !== false; };
-                if(__warn(value) !== false && valid.getMessage() === undefined) {
-                    valid.setMessage(message);
-                }
+                if(__warn(value) !== false) {
+					if(valid.getMessage() === undefined) {
+						valid.setMessage(message);
+					}
+                } else {
+					valid.setMessage(undefined);
+				}
                 valid.setValid(true);
             } else {
                 valid.setValid(false);
@@ -433,6 +455,7 @@ Utils = window.Utils || {};
 		if(message === undefined) {
 			message = "Invalid object for '" + name + "'.";
 		}
+		var hasMessage = false;
         for(var prop in validityMap) {
             if(!validityMap[prop].isValid()) {
                 valid.setValid(false);
@@ -445,8 +468,11 @@ Utils = window.Utils || {};
                 }
                 corrected[prop] = validityMap[prop].getValue();
             }
+            if(validityMap[prop].getMessage() !== undefined) {
+				hasMessage = true;
+			}
         }
-        if(valid.isCorrected()) {
+        if(hasMessage) {
             valid.setMessage(message);
         }
         valid.setType('object');
@@ -543,6 +569,7 @@ Utils = window.Utils || {};
 
         var corrected = undefined;
         var invalidMessage = "Invalid " + itemPlural.toLowerCase() + " in " + name + " array.";
+		var hasMessage = false;
         for(var i in validityMap) {
             if(!validityMap[i].isValid()) {
                 valid.setValid(false);
@@ -555,8 +582,11 @@ Utils = window.Utils || {};
                 }
                 corrected[i] = validityMap[i].getValue();
             }
+            if(validityMap[i].getMessage() !== undefined) {
+				hasMessage = true;
+			}
         }
-        if(valid.isCorrected()) {
+        if(hasMessage) {
             valid.setMessage(invalidMessage);
         }
 
@@ -625,6 +655,10 @@ Utils = window.Utils || {};
 		}
 
 		return variable;
+	};
+
+	Utils.isStringOrNumber = function(variable) {
+		return !isNaN(parseFloat(variable)) || _.isString(variable);
 	};
 
 })(window.Utils);
