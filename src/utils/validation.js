@@ -16,6 +16,7 @@ Utils = window.Utils || {};
             }
             this.setValidityMap(settings.validityMap);
             this.setInfo(settings.info);
+			this.setType(settings.type);
         } else {
             this._name = name;
             this._input = input;
@@ -23,6 +24,7 @@ Utils = window.Utils || {};
             this._message = message;
         }
     };
+    Utils.Validity.prototype._type = 'value';
     Utils.Validity.prototype._name = undefined;
     Utils.Validity.prototype._input = undefined;
     Utils.Validity.prototype._valid = true;
@@ -31,6 +33,12 @@ Utils = window.Utils || {};
     Utils.Validity.prototype._isCorrected = false;
     Utils.Validity.prototype._info = undefined;
 
+    Utils.Validity.prototype.setType = function(type) {
+        this._type = type;
+    };
+    Utils.Validity.prototype.getType = function() {
+		return this._type;
+	}
     Utils.Validity.prototype.setName = function(name) {
         this._name = name;
     };
@@ -87,6 +95,9 @@ Utils = window.Utils || {};
         var name = this.getName();
         var defaultTo = this.getCorrectedValue();
         var value = this.getInput();
+		if(!returnAsArray) {
+			value = Utils.valueToString(value, 30);
+		}
 
         // If reason does not end with full stop, add one.
         if(!/\.\s*?/.exec(why)) {
@@ -166,7 +177,7 @@ Utils = window.Utils || {};
      */
     Utils.logValidity = function(validity) {
         if(!(validity instanceof Utils.Validity)) {
-            Utils.logger.error("Could not log validity.", validity);
+            Utils.log.error("Could not log validity.", validity);
             return false;
         }
 
@@ -179,9 +190,9 @@ Utils = window.Utils || {};
         message.push(". Error: ");
         message.push(error);
         if(!validity.isValid()) {
-            Utils.logger.error.apply(Utils.logger, message);
+            Utils.log.error.apply(Utils.log, message);
         } else if (validity.isCorrected()) {
-            Utils.logger.warn.apply(Utils.logger, message);
+            Utils.log.warn.apply(Utils.log, message);
         }
 
         return true;
@@ -237,10 +248,6 @@ Utils = window.Utils || {};
                 method = utilMethod;
             }
         }
-        // No message provided or found, go for generic.
-        if(!Utils.isString(message)) {
-            message = "Invalid.";
-        }
 
         // Apply validation method
         if(Utils.isFunction(method)) {
@@ -281,10 +288,13 @@ Utils = window.Utils || {};
                 valid.setValid(true);
             } else {
                 valid.setValid(false);
-                valid.setMessage(message);
+				if(valid.getMessage() === undefined) {
+					valid.setMessage(message);
+				}
             }
-        } else {
-            valid.setMessage(undefined); // in case a validity object was given with a message
+			if(valid.getMessage() === undefined) {
+				valid.setMessage("Invalid.");
+			}
         }
 
         return valid;
@@ -348,6 +358,7 @@ Utils = window.Utils || {};
 
         // Create Validity object
         var valid = new Utils.Validity({
+			type: 'multiple',
             name: name,
             input: inputMap,
             valid: isValid,
@@ -380,14 +391,11 @@ Utils = window.Utils || {};
             obj = name;
             name = 'Object';
         }
-
-        if(!Utils.isFunction(callback)) {
-            callback = Utils.logValidity;
-        }
+        callback = Utils.ensure(callback, Utils.isFunction, function(){});
 
         if(!Utils.isObject(checks)) {
             var invalid = new Utils.Validity(name, checks, false, "Invalid 'checks' parameter. Must be object.");
-            callback(invalid);
+			callback(invalid);
             return invalid;
         }
 
@@ -433,6 +441,7 @@ Utils = window.Utils || {};
         if(valid.isCorrected()) {
             valid.setMessage(invalidMessage);
         }
+        valid.setType('object');
 
         callback(valid);
         return valid;
@@ -462,11 +471,10 @@ Utils = window.Utils || {};
             name = 'Array';
         }
 
-        if(!Utils.isFunction(callback)) {
-            callback = Utils.logValidity;
-        }
+		callback = Utils.ensure(callback, Utils.isFunction, function(){});
+
         if(!Utils.isArray(array)) {
-            var invalid = new Utils.Validity(name, array, false, "Must be an array.");
+            var invalid = new Utils.Validity({name: name, input: array, valid: false, message: "Must be an array", type: 'array'});
             callback(invalid);
             return invalid;
         }
@@ -486,6 +494,7 @@ Utils = window.Utils || {};
                 name: name,
                 input: array,
                 valid: false,
+				type: 'array',
                 message: name + " must contain at least " + minLength + " "+itemPlural.toLowerCase()
             });
             callback(invalid2);
@@ -496,6 +505,7 @@ Utils = window.Utils || {};
                 name: name,
                 input: array,
                 valid: false,
+				type: 'array',
                 message: name + " may contain at most " + maxLength + " "+itemPlural.toLowerCase()
             });
             callback(invalid3);
@@ -537,6 +547,7 @@ Utils = window.Utils || {};
         }
 
         valid.setValidityMap(validityMap);
+		valid.setType('array');
 
         callback(valid);
         return valid;
@@ -567,5 +578,39 @@ Utils = window.Utils || {};
     Utils.def = function (v) {
         return ((v !== null) && (v !== undefined));
     };
+
+	Utils.ensure = function (variable, evalFunc, defaultValue, message) {
+		var sure = variable;
+		if (!evalFunc(variable)) {
+			sure = defaultValue;
+			if (Utils.def(message)) {
+				Utils.log.error("Utils::ensure", message, variable);
+			}
+		}
+
+		return sure;
+	};
+
+	Utils.ensurePath = function(variable, path, evalFunc, defaultValue, message) {
+		if(!_.isObject(variable)) {
+			variable = {};
+		}
+		if(_.isArray(path)) {
+			_.forEach(path, function(p) {
+				variable = Prologram.Utils.ensurePath(variable, p, evalFunc, defaultValue, p + ": " + message);
+			});
+			return variable;
+		}
+
+		var check = _.get(variable, path);
+		if (!evalFunc(check)) {
+			_.set(variable, path, check);
+			if (Prologram.Utils.def(message)) {
+				Prologram.Log.error(message, variable);
+			}
+		}
+
+		return variable;
+	};
 
 })(window.Utils);

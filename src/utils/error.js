@@ -24,7 +24,7 @@ var Utils = window.Utils || {};
         this.public			= specs.public || true;
     };
 
-    Utils.Error.prototype.logger = Utils.Log;
+    Utils.Error.prototype.log = Utils.Log;
 
     Utils.Error.prototype.message = 'An error occurred.';
     Utils.Error.prototype.originalError = undefined;
