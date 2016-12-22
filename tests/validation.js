@@ -249,6 +249,17 @@ QUnit.test("Utils.validateObject validates each specified key-value pair in an o
         qux: [1,2,3]
     });
 });
+QUnit.test("Utils.validateObject returns invalid validity object if one of the checked properties is invalid.", function(assert) {
+	var obj = {
+		a: 'x',
+		b: 'y'
+	};
+	var check = Utils.validateObject('x', obj, {
+		a: ['isString'],
+		b: ['isNumber']
+	});
+	assert.equal(check.isValid(), false);
+});
 
 QUnit.test("Utils.validateArray validates each item in an array.", function(assert) {
     var arr1 = [1,2,3];
@@ -369,4 +380,40 @@ QUnit.test("Utils.def returns false for null and undefined values, and true othe
     assert.equal(Utils.def({}), true);
     assert.equal(Utils.def([]), true);
     assert.equal(Utils.def(""), true);
+});
+
+QUnit.test("Utils.ensure returns the given value if it matches the given condition, or a given default otheriwse.", function(assert) {
+	var val1 = {a:'foo'};
+	var val2 = 'foo';
+	var sure1 = Utils.ensure(val1, _.isObject, {});
+	var sure2 = Utils.ensure(val2, _.isObject, {});
+	assert.equal(sure1, val1);
+	assert.notEqual(sure2, val2);
+	assert.deepEqual(sure2, {});
+});
+
+QUnit.test("Utils.ensurePath creates a value at the given path if the current value at that path does not match the given condition.", function(assert) {
+	var obj1 = {
+		a: 'foo',
+		b: {
+			c: 'bar'
+		}
+	};
+	var obj2 = {
+		a: 'foo',
+		b: {
+			c: 123
+		}
+	};
+	var obj3 = {
+		a: 'foo'
+	};
+
+	Utils.ensurePath(obj1, 'b.c', _.isNumber, 0);
+	Utils.ensurePath(obj2, 'b.c', _.isNumber, 0);
+	Utils.ensurePath(obj3, 'b.c', _.isNumber, 0);
+
+	assert.equal(obj1.b.c, 0);
+	assert.equal(obj2.b.c, 123);
+	assert.equal(obj3.b.c, 0);
 });

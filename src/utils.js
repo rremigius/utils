@@ -1,10 +1,10 @@
 var Utils = {};
 
-Utils.log = console;
+Utils.Log = console;
 
 Utils.extendUtils = function(extend, overwrite, ignore) {
     if(typeof(extend) !== 'object' && typeof(extend) !== 'function') {
-        Utils.log.error("Could not extend utils. Extension must be object or function.");
+        Utils.Log.error("Could not extend utils. Extension must be object or function.");
         return false;
     }
     if(!Array.isArray(overwrite)) {
@@ -32,23 +32,23 @@ if(typeof(_) === 'function') {
 }
 
 Utils.setLogger = function(logger) {
-    Utils.log = logger;
+    Utils.Log = logger;
 };
 
 Utils.requireUtils = function(methods) {
     if(typeof(Utils.get) !== 'function') {
-        Utils.log.error("Could not load utils. Required method 'get' is not available.");
+        Utils.Log.error("Could not load utils. Required method 'get' is not available.");
         return false;
     }
 
     if(!Array.isArray(methods)) {
-        Utils.log.error("Could not load utils. Required methods argument should be an array.");
+        Utils.Log.error("Could not load utils. Required methods argument should be an array.");
         return false;
     }
 
     for(var i = 0; i < methods.length; i++) {
         if(typeof(Utils.get(Utils, methods[i])) !== 'function') {
-            Utils.log.error("Could not load utils: invalid method '" + methods[i] + "'.");
+            Utils.Log.error("Could not load utils: invalid method '" + methods[i] + "'.");
             return false;
         }
     }

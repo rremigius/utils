@@ -10,10 +10,7 @@ var Utils = window.Utils || {};
         }
 
         // Covers some irregular plurals
-        if(string.slice(-2) === 'us') {
-            return string.slice(0, string.length-2) + 'i';
-        }
-        if(string.slice(-1) === 's') {
+        if(string.slice(-1) === 's' || string.slice(-2) === 'sh') {
             return string + 'es';
         }
 
@@ -98,9 +95,10 @@ var Utils = window.Utils || {};
         if(maxLength === 1) {
             return '[';
         }
-        if(maxLength <= 5) {
+        var countCount = 2 + (""+value.length).length;
+        if(maxLength <= 5 + countCount) {
             if(value.length === 0) return '[]';
-            return '[' + Utils.dotString(maxLength-2) + ']'
+            return '[' + Utils.dotString(Math.min(3, maxLength-2)) + ']'
         }
         var str = '[';
         var keyCount = 0;
@@ -108,12 +106,15 @@ var Utils = window.Utils || {};
             var itemValue = Utils.valueToString(value[i], 7);
             var dotCount = i < value.length-1 ? 4 : 0;
             var commaCount = i === 0 ? 0 : 1;
-            if(str.length + commaCount + itemValue.length + dotCount < maxLength) {
+            if(str.length + commaCount + itemValue.length + dotCount + countCount < maxLength) {
                 if(i !== 0) {
                     str += ',';
                 }
                 str += itemValue;
                 keyCount++;
+                if(keyCount >= 2) {
+                    break;
+                }
             } else {
                 break;
             }
@@ -124,7 +125,7 @@ var Utils = window.Utils || {};
             }
             str += Utils.dotString(Math.min(3, maxLength - str.length - 1));
         }
-        str += ']';
+        str += ']' + '(' + value.length +')';
         return str;
     };
 
@@ -146,7 +147,6 @@ var Utils = window.Utils || {};
         if(maxLength <= 0) {
             return "";
         }
-        var str = "";
         if(Utils.isString(value)) {
             if(maxLength === 1) {
                 return '"';
