@@ -8,13 +8,17 @@
 
     /**
      * @param {object|string} specs             Error message or specs.
+     * @param {Utils.Error} [originalError]     Original error message (only if first argument was string).
      * @constructor
      */
-    Utils.Error = function(specs) {
+    Utils.Error = function(specs, originalError) {
         if(Utils.isString(specs)) {
             specs = {
                 message: specs
             };
+            if(originalError instanceof Utils.Error) {
+                specs.originalError = originalError;
+            }
         }
         specs = specs || {};
 
