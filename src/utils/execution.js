@@ -31,7 +31,7 @@
         if(_.isArray(valid.deferredMap)) {
             var newObj = {};
             valid.deferredMap.forEach(function(item, i) {
-                newObj["Deferred " + i] = item;
+                newObj[i] = item;
             });
             valid.deferredMap = newObj;
         }
