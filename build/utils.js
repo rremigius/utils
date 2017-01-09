@@ -2699,6 +2699,12 @@
             return invalid;
         }
 
+        if (!Utils.isObject(obj)) {
+            var invalid = new Validation.Validity(name, checks, false, "Invalid object.");
+            callback(invalid);
+            return invalid;
+        }
+
         var validityMap = {};
         for (var prop in checks) {
             var args = Utils.clone(checks[prop]);
