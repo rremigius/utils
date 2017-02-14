@@ -136,6 +136,7 @@
 
 		var code = 'validation-' + this.getType();
 		var error = new Utils.Error({
+			data	: this.getInput(),
 			message	: this.createBadValueMessage(),
 			code	: code
 		});
