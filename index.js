@@ -7,6 +7,7 @@
     loaded.push(require('./src/utils/string').String);
     loaded.push(require('./src/utils/validation').Validation);
     loaded.push(require('./src/utils/error').Error);
+	loaded.push(require('./src/utils/dom').DOM);
 
     for(var i=0; i<loaded.length; i++) {
         Utils.extendUtils(loaded[i]);

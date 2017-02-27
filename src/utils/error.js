@@ -49,7 +49,5 @@
 		return this.message;
 	};
 
-	Utils.export('Error', Error);
-
-	module.exports.Error = Error;
+	module.exports.Error = Utils.Error;
 })();

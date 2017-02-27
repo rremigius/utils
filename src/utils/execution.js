@@ -111,5 +111,5 @@
 		return deferred.promise();
 	};
 
-	modules.export.Execution = Execution;
+	module.exports.Execution = Execution;
 })();
