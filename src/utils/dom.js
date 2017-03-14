@@ -12,18 +12,19 @@
 		var txt = '';
 		if (window.getSelection)
 		{
-			txt = window.getSelection();
+			txt = ""+window.getSelection();
 		}
 		else if (document.getSelection)
 		{
-			txt = document.getSelection();
+			txt = ""+document.getSelection();
 		}
 		else if (document.selection)
 		{
-			txt = document.selection.createRange().text;
+			txt = ""+document.selection.createRange().text;
 		}
 		else return;
-		document.aform.selectedtext.value =  txt;
+
+		return txt.length > 0 ? txt : undefined;
 	};
 
 	module.exports.DOM = DOM;
