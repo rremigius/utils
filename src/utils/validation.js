@@ -186,7 +186,7 @@
 	 * @param {Validation.Validity} validity
 	 * @returns {boolean}   Whether or not the validity was logged.
 	 */
-	Validation.LogValidity = function(validity) {
+	Validation.logValidity = function(validity) {
 		if(!(validity instanceof Validation.Validity)) {
 			Utils.Log.error("Could not log validity.", validity);
 			return false;
@@ -247,7 +247,7 @@
 	Validation.validateOne = function(name, value, method, message, options) {
 		/** @type {Validation.Validity|boolean} */
 		var valid = undefined;
-		if(Utils.isObject(message)) { // message was omitted
+		if(Utils.isPlainObject(message)) { // message was omitted
 			options = message;
 			message = undefined;
 		}
@@ -294,6 +294,13 @@
 		}
 
 		// Feedback
+		var __setMessage = function(valid, message) {
+			if(_.isFunction(message)) {
+				message = message(value);
+			}
+			valid.setMessage(message);
+		};
+
 		if(!valid.isValid()) {
 			if(message === undefined) {
 				message = 'Invalid.';
@@ -310,20 +317,20 @@
 				var __warn = Utils.isFunction(warn) ? warn : function() { return warn !== false; };
 				if(__warn(value) !== false) {
 					if(valid.getMessage() === undefined) {
-						valid.setMessage(message);
+						__setMessage(valid, message);
 					}
 				} else {
-					valid.setMessage(undefined);
+					__setMessage(valid, undefined);
 				}
 				valid.setValid(true);
 			} else {
 				valid.setValid(false);
 				if(valid.getMessage() === undefined) {
-					valid.setMessage(message);
+					__setMessage(valid, message);
 				}
 			}
 		} else if(!valid.isCorrected()) {
-			valid.setMessage(undefined);
+			__setMessage(valid, undefined);
 		}
 
 		return valid;
@@ -356,7 +363,7 @@
 
 		var validityMap = {};
 		var inputMap = {};
-		callback = Validation.ensure(callback, Utils.isFunction, callback === false ? function(){} : Validation.LogValidity);
+		callback = Validation.ensure(callback, Utils.isFunction, callback === false ? function(){} : Validation.logValidity);
 
 		if(consequence === undefined) {
 			consequence = '';
@@ -403,12 +410,12 @@
 	 *
 	 * Example usage: Validation.validateObject('myObject', {a: 'apple'}, {a: ['isString']}).
 	 *
-	 * @param {string} name			 The name of the validation.
-	 * @param {object} obj			  The object to check.
-	 * @param {object} checks		   An object with for each key to check an array of arguments [method, message, options]
-	 *								  to pass to the validateOne function.
-	 * @param {string} [message]			Message to add to ValidityObject in case of invalid object.
-	 * @param {function} [callback]	 A function that takes a Validity object as argument.
+	 * @param {string} name			 	The name of the validation.
+	 * @param {object} obj			  	The object to check.
+	 * @param {object} checks		   	An object with for each key to check an array of arguments [method, message, options]
+	 *								  	to pass to the validateOne function.
+	 * @param {string} [message]		Message to add to ValidityObject in case of invalid object.
+	 * @param {function} [callback]	 	A function that takes a Validity object as argument.
 	 *
 	 * @return {Validation.Validity}
 	 */
@@ -420,11 +427,7 @@
 			obj = name;
 			name = 'Object';
 		}
-		if(Utils.isFunction(message)) {
-			callback = message;
-			message = undefined;
-		}
-		callback = Validation.ensure(callback, Utils.isFunction, callback === false ? function(){} : Validation.LogValidity);
+		callback = Validation.ensure(callback, Utils.isFunction, callback === false ? function(){} : Validation.logValidity);
 
 		if(!Utils.isObject(checks)) {
 			var invalid = new Validation.Validity(name, checks, false, "Invalid 'checks' parameter. Must be object.");
@@ -457,6 +460,13 @@
 			validityMap[prop] = Validation.validateOne.apply(Validation, args);
 		}
 
+		var __setMessage = function(valid, message) {
+			if(_.isFunction(message)) {
+				message = message(obj);
+			}
+			valid.setMessage(message);
+		};
+
 		var valid = new Validation.Validity({
 			name: name,
 			input: obj,
@@ -470,7 +480,7 @@
 		for(var prop in validityMap) {
 			if(!validityMap[prop].isValid()) {
 				valid.setValid(false);
-				valid.setMessage(message);
+				__setMessage(valid, message);
 			}
 			if(validityMap[prop].isCorrected()) {
 				if(corrected === undefined) {
@@ -484,7 +494,7 @@
 			}
 		}
 		if(hasMessage) {
-			valid.setMessage(message);
+			__setMessage(valid, message);
 		}
 		valid.setType('object');
 
@@ -498,12 +508,12 @@
 	 * Example usage: Validation.validateArray("myArray", ['apple', 'banana', 123], ["isString", {default: 'fruit'}]);
 	 *
 	 * @param {string} name
-	 * @param {Array} array				 The array to validate.
+	 * @param {Array} array				 					The array to validate.
 	 * @param {Array|string|function} itemValidation		The validation arguments [method, message, options]
-	 * @param {number} [options.minLength=0]		[optional] The minimum length of the array.
-	 * @param {number} [options.maxLength=Infinity] [optional] The maximum length of the array.
-	 * @param {string} [options.itemType='Item']	[optional] What to call an item.
-	 * @param {function} [callback]		 [optional] Callback instead of direct error messages. Callback is called with a Validity object as argument.
+	 * @param {number} [options.minLength=0]				[optional] The minimum length of the array.
+	 * @param {number} [options.maxLength=Infinity] 		[optional] The maximum length of the array.
+	 * @param {string} [options.itemType='Item']			[optional] What to call an item.
+	 * @param {function} [callback]		 					[optional] Callback instead of direct error messages. Callback is called with a Validity object as argument.
 	 */
 	Validation.validateArray = function(name, array, itemValidation, message, options, callback) {
 		if(Utils.isArray(name)) {
@@ -514,7 +524,7 @@
 			array = name;
 			name = 'Array';
 		}
-		if(Utils.isObject(message)){
+		if(Utils.isPlainObject(message)){
 			callback = options;
 			options = message;
 		}
@@ -522,7 +532,7 @@
 		var maxLength = _.get(options, 'maxLength');
 		var itemType = _.get(options, 'itemType');
 
-		callback = Validation.ensure(callback, Utils.isFunction, callback === false ? function(){} : Validation.LogValidity);
+		callback = Validation.ensure(callback, Utils.isFunction, callback === false ? function(){} : Validation.logValidity);
 
 		if(!Utils.isArray(array)) {
 			var invalid = new Validation.Validity({name: name, input: array, valid: false, message: "Must be an array", type: 'array'});
