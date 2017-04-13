@@ -353,12 +353,14 @@
 	 *								  If any of the validations failed, FALSE will be returned.
 	 */
 	Validation.validate = function(name, checks, consequence, callback) {
+		var defaultValidationName = 'Validation';
+
 		// Can also be called without a name
 		if(Utils.isObject(name)) {
 			callback = consequence;
 			consequence = checks;
 			checks = name;
-			name = 'Validation';
+			name = defaultValidationName;
 		}
 
 		var validityMap = {};
@@ -399,7 +401,11 @@
 			validityMap: validityMap
 		});
 		if(!isValid) {
-			valid.setMessage("Validation failed for '" + name + "'.");
+			if(name === defaultValidationName) {
+				valid.setMessage("Validation failed.");
+			} else {
+				valid.setMessage("Validation failed for '" + name + "'.");
+			}
 		}
 		callback(valid);
 		return valid;
