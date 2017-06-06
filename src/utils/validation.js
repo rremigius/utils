@@ -590,6 +590,9 @@
 			validationArgs = Utils.clone(itemValidation);
 			validationArgs.unshift(item);
 			validationArgs.unshift(itemName);
+			if(_.def(message)) {
+				validationArgs.push(message);
+			}
 
 			validityMap[i] = Validation.validateOne.apply(Validation, validationArgs);
 		}
