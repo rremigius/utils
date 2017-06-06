@@ -590,7 +590,7 @@
 			validationArgs = Utils.clone(itemValidation);
 			validationArgs.unshift(item);
 			validationArgs.unshift(itemName);
-			if(_.def(message)) {
+			if(Utils.def(message)) {
 				validationArgs.push(message);
 			}
 

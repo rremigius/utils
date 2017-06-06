@@ -317,7 +317,7 @@ QUnit.test("Utils.validateObject calls callback after validation.", function(ass
         a: 1
     }, {
         a: ['isNumber']
-    }, function(valid) {
+    }, "SomeConsequence", function(valid) {
         assert.ok(valid instanceof Utils.Validity);
         done();
     });
