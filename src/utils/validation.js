@@ -441,7 +441,7 @@
 		if(Utils.isFunction(options)) {
 			callback = options;
 		}
-		callback = Validation.ensure(callback, Utils.isFunction, callback === false ? function(){} : Validation.logValidity);
+		callback = Validation.ensure(callback, Utils.isFunction, function() {});
 
 		if(!Utils.isObject(checks)) {
 			var invalid = new Validation.Validity(name, checks, false, "Invalid 'checks' parameter. Must be object.");
@@ -551,7 +551,7 @@
 		var maxLength = _.get(options, 'maxLength');
 		var itemType = _.get(options, 'itemType');
 
-		callback = Validation.ensure(callback, Utils.isFunction, callback === false ? function(){} : Validation.logValidity);
+		callback = Validation.ensure(callback, Utils.isFunction, function() {});
 
 		if(!Utils.isArray(array)) {
 			var invalid = new Validation.Validity({name: name, input: array, valid: false, message: "Must be an array", type: 'array'});
