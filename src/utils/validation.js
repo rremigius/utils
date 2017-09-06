@@ -421,17 +421,25 @@
 	 * @param {object} checks		   	An object with for each key to check an array of arguments [method, message, options]
 	 *								  	to pass to the validateOne function.
 	 * @param {string} [message]		Message to add to ValidityObject in case of invalid object.
+	 * @param {string} [options]		Options for validatObject.
 	 * @param {function} [callback]	 	A function that takes a Validity object as argument.
 	 *
 	 * @return {Validation.Validity}
 	 */
-	Validation.validateObject = function(name, obj, checks, message, callback) {
+	Validation.validateObject = function(name, obj, checks, message, options, callback) {
 		if(Utils.isObject(name)) {
 			callback = message;
 			message = checks;
 			checks = obj;
 			obj = name;
 			name = 'Object';
+		}
+		if(Utils.isObject(message)) {
+			callback = options;
+			options = message;
+		};
+		if(Utils.isFunction(options)) {
+			callback = options;
 		}
 		callback = Validation.ensure(callback, Utils.isFunction, callback === false ? function(){} : Validation.logValidity);
 
@@ -449,6 +457,11 @@
 
 		var validityMap = {};
 		for(var prop in checks) {
+			// For optional properties that are not in the object, skip validation.
+			if(Utils.get(options, 'optionalProperties') === true && !(prop in obj)) {
+				continue;
+			}
+
 			var args = Utils.clone(checks[prop]);
 			var isArray = Utils.isArray(args);
 
