@@ -260,6 +260,17 @@ QUnit.test("Utils.validateObject returns invalid validity object if one of the c
 	});
 	assert.equal(check.isValid(), false);
 });
+QUnit.test("Utils.validateObject with option 'optionalProperties' skips and omits missing properties from validation.", function(assert) {
+	var obj = {
+		a: 'x'
+	};
+	var check = Utils.validateObject(obj, {
+		a: 'isString',
+		b: 'isString'
+	}, {optionalProperties: true});
+	assert.ok('a' in check.getValue());
+	assert.notOk('b' in check.getValue());
+});
 
 QUnit.test("Utils.validateArray validates each item in an array.", function(assert) {
     var arr1 = [1,2,3];
