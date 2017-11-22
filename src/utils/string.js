@@ -1,15 +1,10 @@
 (function() {
-	var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	var Utils = isNode ? require('../utils-core').Utils : window.Utils;
-	if(!Utils) {
-		console.error("UtilsCore not loaded.");
-		return false;
-	}
+	var _ = require('lodash');
 
 	var Str = {};
 
 	Str.plural = function(string) {
-		if(!Utils.isString(string)) {
+		if(!_.isString(string)) {
 			return "things";
 		}
 
@@ -22,7 +17,7 @@
 	};
 
 	Str.capitaliseFirst = function (s) {
-		if (!Utils.isString(s)) {
+		if (!_.isString(s)) {
 			return null;
 		}
 
@@ -30,7 +25,7 @@
 	};
 
 	Str.dotString = function(number) {
-		if(!Utils.isNumber(number)) {
+		if(!_.isNumber(number)) {
 			return "";
 		}
 		var str = "";
@@ -41,7 +36,7 @@
 	};
 
 	Str.truncateString = function(str, maxLength) {
-		if (!Utils.isString(str)) {
+		if (!_.isString(str)) {
 			return str;
 		}
 
@@ -62,7 +57,7 @@
 			if(Object.keys(value).length === 0) {
 				return '{}';
 			}
-			return '{' + Utils.dotString(maxLength-2) + '}';
+			return '{' + Str.dotString(maxLength-2) + '}';
 		}
 		var str = "{";
 		var keys = Object.keys(value);
@@ -71,7 +66,7 @@
 		for(var i in value) {
 			var commaCount = str.length === 1 ? 0 : 1;
 			var dotCount = i === lastKey ? 0 : 4;
-			var keyValue = Utils.valueToString(value[i], 7);
+			var keyValue = Str.valueToString(value[i], 7);
 			if(str.length + commaCount + i.length + 1 + keyValue.length + dotCount < maxLength) {
 				if(str.length > 1) {
 					str += ',';
@@ -86,7 +81,7 @@
 			if(str.length > 1) {
 				str += ',';
 			}
-			str += Utils.dotString(Math.min(3, maxLength - str.length - 1));
+			str += Str.dotString(Math.min(3, maxLength - str.length - 1));
 		}
 		str += "}";
 		return str;
@@ -102,12 +97,12 @@
 		var countCount = 2 + (""+value.length).length;
 		if(maxLength <= 5 + countCount) {
 			if(value.length === 0) return '[]';
-			return '[' + Utils.dotString(Math.min(3, maxLength-2)) + ']'
+			return '[' + Str.dotString(Math.min(3, maxLength-2)) + ']'
 		}
 		var str = '[';
 		var keyCount = 0;
 		for(var i = 0; i<value.length; i++) {
-			var itemValue = Utils.valueToString(value[i], 7);
+			var itemValue = Str.valueToString(value[i], 7);
 			var dotCount = i < value.length-1 ? 4 : 0;
 			var commaCount = i === 0 ? 0 : 1;
 			if(str.length + commaCount + itemValue.length + dotCount + countCount < maxLength) {
@@ -127,7 +122,7 @@
 			if(str.length > 1) {
 				str += ',';
 			}
-			str += Utils.dotString(Math.min(3, maxLength - str.length - 1));
+			str += Str.dotString(Math.min(3, maxLength - str.length - 1));
 		}
 		str += ']' + '(' + value.length +')';
 		return str;
@@ -142,7 +137,7 @@
 			return strValue;
 		}
 		if(maxLength < 5) {
-			return Utils.dotString(Math.min(3, maxLength));
+			return Str.dotString(Math.min(3, maxLength));
 		}
 		return value.toExponential(Math.max(0, maxLength-5));
 	};
@@ -151,7 +146,7 @@
 		if(maxLength <= 0) {
 			return "";
 		}
-		if(Utils.isString(value)) {
+		if(_.isString(value)) {
 			if(maxLength === 1) {
 				return '"';
 			}
@@ -159,28 +154,28 @@
 				return '"' + value + '"';
 			}
 			if(maxLength <= 5) {
-				return '"' + Utils.dotString(maxLength-2) + '"';
+				return '"' + Str.dotString(maxLength-2) + '"';
 			}
-			return '"' + Utils.truncateString(value, maxLength-2) + '"';
+			return '"' + Str.truncateString(value, maxLength-2) + '"';
 		}
-		if(Utils.isNumber(value)) {
-			return Utils.numberToString(value, maxLength);
+		if(_.isNumber(value)) {
+			return Str.numberToString(value, maxLength);
 		}
-		if(Utils.isBoolean(value)) {
+		if(_.isBoolean(value)) {
 			if(maxLength < 5) {
 				return value ? 't' : 'f';
 			}
 			return value ? 'true' : 'false';
 		}
-		if(Utils.isArray(value)) {
-			return Utils.arrayToString(value, maxLength);
+		if(_.isArray(value)) {
+			return Str.arrayToString(value, maxLength);
 		}
-		if(Utils.isObject(value)) {
-			return Utils.objectToString(value, maxLength);
+		if(_.isObject(value)) {
+			return Str.objectToString(value, maxLength);
 		}
 
-		return Utils.truncateString(""+value, maxLength);
+		return Str.truncateString(""+value, maxLength);
 	};
 
-	module.exports.String = Str;
+	module.exports = Str;
 })();

@@ -52,3 +52,5 @@ TestUtils.resetReplacedProperties = function() {
 TestUtils.resetReplacedMethods = function() {
     return TestUtils.resetReplacedProperties();
 };
+
+module.exports = TestUtils;

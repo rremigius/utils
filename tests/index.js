@@ -1,5 +1,8 @@
-require('../src/index');
+require('../index');
 
-require('./utils');
-require('./string');
-require('./validation');
+require('./qunit-test-utils');
+
+require('./test-core');
+require('./test-string');
+require('./test-validation');
+require('./test-execution');

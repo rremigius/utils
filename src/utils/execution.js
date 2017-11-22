@@ -1,33 +1,86 @@
 (function() {
-	var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	var Utils = isNode ? require('../utils-core').Utils : window.Utils;
-	if (!Utils) {
-		console.error("UtilsCore not loaded.");
-		return false;
-	}
+	var $ = require('jquery');
+	var _ = require('lodash');
+	var Validation = require('./validation');
+	var Error = require('./error');
 
 	var Execution = {};
 
-	Execution.Deferred = function() {
+	Execution.Deferred = $.Deferred;
 
+	/**
+	 * Tests whether the object is a Promise from a $.Deferred object.
+	 * @param value
+	 * @returns {boolean}
+	 */
+	Execution.isPromise = function(value) {
+		if(!_.isObject(value)) {
+			return false;
+		}
+		if (typeof value.then !== "function") {
+			return false;
+		}
+		var promiseThenSrc = String(Execution.Deferred().then);
+		var valueThenSrc = String(value.then);
+		return promiseThenSrc === valueThenSrc;
+	};
+
+	/**
+	 * Handles direct values and promises in the same way. If the given value is a promise, it is handled async.
+	 * Otherwise, the promise is resolved immediately.
+	 * @param value				 Value or promise.
+	 * @param {function} [failWhen] A function to check whether a value is a considered a failure value.
+	 *							  Should return TRUE if value should cause promise to be rejected.
+	 * @return {$.Deferred}	A promise for the result.
+	 */
+	Execution.promise = function(value, failWhen) {
+		// To check if resulting value should resolve or reject promise
+		if(!_.isFunction(failWhen)) {
+			failWhen = function(val) { return false; }; // by default, never reject values
+		}
+
+		var deferred = new Execution.Deferred();
+		if(Execution.isPromise(value)) {
+			value.done(function(result) {
+				if(failWhen(result)) {
+					deferred.reject(result);
+				} else {
+					deferred.resolve(result);
+				}
+			});
+			value.fail(function(result) {
+				deferred.reject(result);
+			});
+			return value;
+		}
+
+		// If failWhen is specified, check value
+		if(failWhen(value)) {
+			deferred.reject(value);
+		} else {
+			deferred.resolve(value);
+		}
+		return deferred.promise();
 	};
 
 	/**
 	 * Waits for all deferred and resolves with an object of their results.
 	 * @param {object} deferredMap   Object of Deferred objects.
 	 * @param {int} [timeout]		Maximum time to wait before throwing a timeout error.
-	 * @returns {$.Deferred}	Will contain either a map of results, or an Prologram.Error object.
+	 * @returns {$.Deferred}	Will contain either a map of results, or an Error object.
 	 */
 	Execution.waitForAll = function(deferredMap, timeout) {
-		var deferred = new $.Deferred();
-		var valid = Prologram.Utils.validate({
+		var deferred = new Execution.Deferred();
+		var check = Validation.validate({
 			deferredMap  : [deferredMap, 'isObject'],
-			timeout	  : [timeout, 'isNumber', {default: 60000, warn: Prologram.Utils.def(timeout)}]
+			timeout	  : [timeout, 'isNumber', {default: 60000, warn: Utils.def(timeout)}]
 		});
-		if(!valid) {
-			deferred.reject(new Prologram.Error({message: "Could not wait for deferred. Invalid arguments.", data: {}, errorMap: {}}));
+		if(!check.isValid()) {
+			deferred.reject(new Error({message: "Could not wait for deferred. Invalid arguments.", data: {}, errorMap: {}}));
 			return deferred.promise();
 		}
+		var valid = check.getValue();
+
 		if(_.isArray(valid.deferredMap)) {
 			var newObj = {};
 			valid.deferredMap.forEach(function(item, i) {
@@ -49,10 +102,10 @@
 			timedOut = true;
 			for(var i in state) {
 				if(state[i].status === 'pending') {
-					errors[i] = new Prologram.Error("Timed out.");
+					errors[i] = new Error("Timed out.");
 				}
 			}
-			deferred.reject(new Prologram.Error({
+			deferred.reject(new Error({
 				code: 'timeout',
 				message: "Timeout during async operations.",
 				data: results,
@@ -71,7 +124,7 @@
 			if(done) {
 				clearTimeout(_timeout);
 				if(Object.keys(errors).length > 0) {
-					deferred.reject(new Prologram.Error({message: "Error(s) occurred during async operations.", errorMap: errors, data: results}));
+					deferred.reject(new Error({message: "Error(s) occurred during async operations.", errorMap: errors, data: results}));
 				} else {
 					deferred.resolve(results)
 				}
@@ -79,10 +132,10 @@
 		};
 
 		Object.keys(valid.deferredMap).forEach(function(i) { // this is necessary for callbacks with i
-			if(!Prologram.Utils.isPromise(valid.deferredMap[i])) {
+			if(!Execution.isPromise(valid.deferredMap[i])) {
 				state[i] = {
 					status: 'rejected',
-					data: new Prologram.Error("Not a promise.")
+					data: new Error("Not a promise.")
 				};
 				errors[i] = state[i].data
 			}
@@ -111,5 +164,55 @@
 		return deferred.promise();
 	};
 
-	module.exports.Execution = Execution;
+	Execution.execAsync = function(steps) {
+		var deferred = new Execution.Deferred();
+
+		if(!_.isPlainObject(steps)) {
+			deferred.reject(new Utils.Error("Steps must be an object."));
+			return deferred.promise();
+		}
+
+		var keys = Object.keys(steps);
+		if(keys.length === 0) {
+			return deferred.resolve({}).promise();
+		}
+
+		var throwError = function(error, key) {
+			results[key] = error;
+
+			var throwableError = error;
+			throwableError.data = results;
+			deferred.reject(throwableError);
+		};
+
+		var results = {};
+		var next = function(i) {
+			if(i > keys.length -1) {
+				deferred.resolve(results);
+				return;
+			}
+
+			var key = keys[i];
+			var step = steps[key];
+			if(!_.isFunction(step)) {
+				throwError(new Error("Step '" + key + "' is not a function."));
+				return;
+			}
+
+			Execution.promise(step(results), function(val) { return val instanceof Error; })
+				.done(function(result) {
+					results[key] = result;
+					next(i+1)
+				})
+				.fail(function(err) {
+					throwError(err);
+				});
+		};
+
+		next(0);
+
+		return deferred.promise();
+	};
+
+	module.exports = Execution;
 })();

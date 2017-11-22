@@ -1,22 +1,18 @@
 (function() {
-	var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	var Utils = isNode ? require('../utils-core').Utils : window.Utils;
-	if(!Utils) {
-		console.error("UtilsCore not loaded.");
-		return false;
-	}
+	var _ = require('lodash');
+	var Log = require('./log');
 
 	/**
 	 * @param {object|string} specs			 Error message or specs.
-	 * @param {Utils.Error} [originalError]	 Original error message (only if first argument was string).
+	 * @param {Error} [originalError]	 Original error message (only if first argument was string).
 	 * @constructor
 	 */
-	Utils.Error = function(specs, originalError) {
-		if(Utils.isString(specs)) {
+	Error = function(specs, originalError) {
+		if(_.isString(specs)) {
 			specs = {
 				message: specs
 			};
-			if(originalError instanceof Utils.Error) {
+			if(originalError instanceof Error) {
 				specs.originalError = originalError;
 			}
 		}
@@ -27,27 +23,25 @@
 		this.errorMap	   = specs.errorMap;
 		this.code		   = specs.code;
 		this.data		   = specs.data;
-		//this.origin		 = Utils.Utils.getCaller(2);
-		//this.stack		  = Utils.Utils.getStackTrace(1, 10);
 		this.public			= specs.public || true;
 	};
 
-	Utils.Error.prototype.log = Utils.Log;
+	Error.prototype.log = Log;
 
-	Utils.Error.prototype.message = 'An error occurred.';
-	Utils.Error.prototype.originalError = undefined;
-	Utils.Error.prototype.errorMap = undefined;
-	Utils.Error.prototype.code = undefined;
-	Utils.Error.prototype.data = undefined;
-	Utils.Error.prototype.origin = undefined;
-	Utils.Error.prototype.stack = undefined;
+	Error.prototype.message = 'An error occurred.';
+	Error.prototype.originalError = undefined;
+	Error.prototype.errorMap = undefined;
+	Error.prototype.code = undefined;
+	Error.prototype.data = undefined;
+	Error.prototype.origin = undefined;
+	Error.prototype.stack = undefined;
 
-	Utils.Error.prototype.toString = function() {
+	Error.prototype.toString = function() {
 		return this.message;
 	};
-	Utils.Error.prototype.getMessage = function() {
+	Error.prototype.getMessage = function() {
 		return this.message;
 	};
 
-	module.exports.Error = Utils.Error;
+	module.exports = Error;
 })();

@@ -3,7 +3,6 @@ var babelify = require('babelify');
 var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
-var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 
 gulp.task('default', function () {

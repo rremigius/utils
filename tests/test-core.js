@@ -8,7 +8,6 @@ QUnit.test("Utils.extend adds properties from argument to Utils object.", functi
 
     Utils.extendUtils(foo);
 
-    console.log(Utils);
     assert.ok(typeof(Utils.bar) === 'function');
     assert.equal(Utils.qux, 'abc');
 });

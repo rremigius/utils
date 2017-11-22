@@ -1,15 +1,13 @@
 (function() {
-	var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	var Utils = isNode ? require('../utils-core').Utils : window.Utils;
-	if(!Utils) {
-		console.error("UtilsCore not loaded.");
-		return false;
-	}
+	var _ = require('lodash');
+	var String = require('./string');
+	var Error = require('./error');
+	var Log = require('./log');
 
 	var Validation = {};
 
 	Validation.Validity = function (name, input, valid, message) {
-		if(arguments.length === 1 && Utils.isObject(name)) {
+		if(arguments.length === 1 && _.isObject(name)) {
 			var settings = name;
 			this.setName(settings.name);
 			this.setValid(settings.valid);
@@ -100,7 +98,7 @@
 		var defaultTo = this.getCorrectedValue();
 		var value = this.getInput();
 		if(!returnAsArray) {
-			value = Utils.valueToString(value, 30);
+			value = String.valueToString(value, 30);
 		}
 
 		// If reason does not end with full stop, add one.
@@ -114,7 +112,7 @@
 		messages.push(value);
 		if(this.isValid() && this.isCorrected()) {
 			messages.push(". Using default:");
-			messages.push(Utils.valueToString(defaultTo));
+			messages.push(String.valueToString(defaultTo));
 		}
 
 		if(returnAsArray === true) {
@@ -126,7 +124,7 @@
 
 	/**
 	 * Creates an Error object.
-	 * @returns {Utils.Error}
+	 * @returns {Error}
 	 */
 	Validation.Validity.prototype.createError = function(includeErrorMap) {
 		var message = this.getMessage();
@@ -135,7 +133,7 @@
 		}
 
 		var code = 'validation-' + this.getType();
-		var error = new Utils.Error({
+		var error = new Error({
 			data	: this.getInput(),
 			message	: this.createBadValueMessage(),
 			code	: code
@@ -146,7 +144,7 @@
 				var errorMap = {};
 				for(var i in validityMap) {
 					var subError = validityMap[i].createError();
-					if(subError instanceof Utils.Error) {
+					if(subError instanceof Error) {
 						errorMap[i] = subError;
 					}
 				}
@@ -157,7 +155,21 @@
 		return error;
 	};
 
-	Validation._validationMessages = {
+	Validation._validationMethods = {};
+
+	Validation.setValidationMethod = function(name, func, message) {
+		if(!_.isFunction(func)) {
+			Log.error("Function given for validation method '" + name + "' is not a function.");
+			return false;
+		}
+
+		Validation._validationMethods[name] = {
+			func: func,
+			message: message
+		}
+	};
+
+	_.forEach({
 		isArguments: "Must be arguments.",
 		isArray: "Must be array.",
 		isBoolean: "Must be boolean.",
@@ -179,7 +191,16 @@
 		isTypedArray: "Must be typed array.",
 		isUndefined: "Must be undefined.",
 		isStringOrNumber: "Must be string or number."
-	};
+	}, function(message, key) {
+		// Lodash validation methods
+		Validation.setValidationMethod(key, _[key], message);
+	});
+	_.forEach({
+		// Utils validation methods
+		isStringOrNumber: "Must be string or number."
+	}, function(message, key) {
+		Validation.setValidationMethod(key, Validation[key], message);
+	});
 
 	/**
 	 *
@@ -188,7 +209,7 @@
 	 */
 	Validation.logValidity = function(validity) {
 		if(!(validity instanceof Validation.Validity)) {
-			Utils.Log.error("Could not log validity.", validity);
+			Log.error("Could not log validity.", validity);
 			return false;
 		}
 
@@ -201,31 +222,22 @@
 		message.push(". Error: ");
 		message.push(error);
 		if(!validity.isValid()) {
-			Utils.Log.error.apply(Utils.Log, message);
+			Log.error.apply(Log, message);
 		} else if (validity.isCorrected()) {
-			Utils.Log.warn.apply(Utils.Log, message);
+			Log.warn.apply(Log, message);
 		}
 
 		return true;
 	};
 
-	Validation.setValidationMessage = function(method, message) {
-		if(typeof(method) !== 'string') {
-			Utils.Log.error("Validation method argument must be string.");
-			return false;
-		}
-		if(typeof(message) !== 'string') {
-			Utils.Log.error("Validation method message argument must be string.");
-			return false;
-		}
-		Validation._validationMessages[method] = message;
+	Validation.getValidationMethod = function(method) {
+		if(!_.isString(method)) return undefined;
+		return _.get(Validation._validationMethods[method], 'func');
 	};
 
 	Validation.getValidationMessage = function(method) {
-		if(typeof(method) !== 'string') {
-			return undefined;
-		}
-		return Validation._validationMessages[method];
+		if(!_.isString(method)) return undefined;
+		return _.get(Validation._validationMethods[method], 'message');
 	};
 
 	/**
@@ -247,24 +259,24 @@
 	Validation.validateOne = function(name, value, method, message, options) {
 		/** @type {Validation.Validity|boolean} */
 		var valid = undefined;
-		if(Utils.isPlainObject(message)) { // message was omitted
+		if(_.isPlainObject(message)) { // message was omitted
 			options = message;
 			message = undefined;
 		}
 
 		// Get method from utils, if method is string
-		if(Utils.isString(method)) {
+		if(_.isString(method)) {
 			// Get function from utils
-			var utilMethod = Utils[method];
+			var utilMethod = Validation.getValidationMethod(method);
 
 			// If no message is provided, try to find one from validationMessages
-			if (!Utils.isString(message)) {
+			if (!_.isString(message)) {
 				message = Validation.getValidationMessage(method);
 				if(message === undefined) {
 					message = "Must be " + method + ".";
 				}
 			}
-			if(!Utils.isFunction(utilMethod)) {
+			if(!_.isFunction(utilMethod)) {
 				message = "Don't know how to validate '"+method+"'";
 				method = new Validation.Validity(name, value, false, message);
 			} else {
@@ -273,16 +285,16 @@
 		}
 
 		// Apply validation method
-		if(Utils.isFunction(method)) {
+		if(_.isFunction(method)) {
 			valid = method.apply(Validation, [value]);
 		// Validity object
 		} else if (method instanceof Validation.Validity) {
 			valid = method;
 		// validateArray
-		} else if (Utils.isArray(method)) {
+		} else if (_.isArray(method)) {
 			valid = Validation.validateArray(name, value, method, undefined, _.get(options, 'array'), false);
 		// validateObject
-		} else if (Utils.isObject(method)) {
+		} else if (_.isObject(method)) {
 			valid = Validation.validateObject(name, value, method, undefined, false);
 		// Boolean validation
 		} else {
@@ -305,16 +317,16 @@
 			if(message === undefined) {
 				message = 'Invalid.';
 			}
-			if(Utils.isObject(options) && 'default' in options) {
-				if(Utils.isFunction(options.default)) {
+			if(_.isObject(options) && 'default' in options) {
+				if(_.isFunction(options.default)) {
 					var def = options.default.apply(Validation, [value]);
 					valid.setCorrectedValue(def);
 				} else {
 					valid.setCorrectedValue(options.default);
 				}
 
-				var warn = Utils.get(options, 'warn');
-				var __warn = Utils.isFunction(warn) ? warn : function() { return warn !== false; };
+				var warn = _.get(options, 'warn');
+				var __warn = _.isFunction(warn) ? warn : function() { return warn !== false; };
 				if(__warn(value) !== false) {
 					if(valid.getMessage() === undefined) {
 						__setMessage(valid, message);
@@ -356,7 +368,7 @@
 		var defaultValidationName = 'Validation';
 
 		// Can also be called without a name
-		if(Utils.isObject(name)) {
+		if(_.isObject(name)) {
 			callback = consequence;
 			consequence = checks;
 			checks = name;
@@ -365,13 +377,13 @@
 
 		var validityMap = {};
 		var inputMap = {};
-		callback = Validation.ensure(callback, Utils.isFunction, callback === false ? function(){} : Validation.logValidity);
+		callback = Validation.ensure(callback, _.isFunction, callback === false ? function(){} : Validation.logValidity);
 
 		if(consequence === undefined) {
 			consequence = '';
 		}
 
-		if(Utils.isObject(checks)) {
+		if(_.isObject(checks)) {
 			for(var i in checks) {
 				checks[i].unshift(i);
 				validityMap[i] = Validation.validateOne.apply(Validation, checks[i]);
@@ -427,29 +439,29 @@
 	 * @return {Validation.Validity}
 	 */
 	Validation.validateObject = function(name, obj, checks, message, options, callback) {
-		if(Utils.isObject(name)) {
+		if(_.isObject(name)) {
 			callback = message;
 			message = checks;
 			checks = obj;
 			obj = name;
 			name = 'Object';
 		}
-		if(Utils.isObject(message)) {
+		if(_.isObject(message)) {
 			callback = options;
 			options = message;
 		};
-		if(Utils.isFunction(options)) {
+		if(_.isFunction(options)) {
 			callback = options;
 		}
-		callback = Validation.ensure(callback, Utils.isFunction, function() {});
+		callback = Validation.ensure(callback, _.isFunction, function() {});
 
-		if(!Utils.isObject(checks)) {
+		if(!_.isObject(checks)) {
 			var invalid = new Validation.Validity(name, checks, false, "Invalid 'checks' parameter. Must be object.");
 			callback(invalid);
 			return invalid;
 		}
 
-		if(!Utils.isObject(obj)) {
+		if(!_.isObject(obj)) {
 			var invalid = new Validation.Validity(name, checks, false, "Invalid object.");
 			callback(invalid);
 			return invalid;
@@ -458,15 +470,15 @@
 		var validityMap = {};
 		for(var prop in checks) {
 			// For optional properties that are not in the object, skip validation.
-			if(Utils.get(options, 'optionalProperties') === true && !(prop in obj)) {
+			if(_.get(options, 'optionalProperties') === true && !(prop in obj)) {
 				continue;
 			}
 
-			var args = Utils.clone(checks[prop]);
-			var isArray = Utils.isArray(args);
+			var args = _.clone(checks[prop]);
+			var isArray = _.isArray(args);
 
 			// Lazy, single-parameter validation (string, boolean or function)
-			if(Utils.isString(args) || Utils.isBoolean(args) || Utils.isFunction(args)) {
+			if(_.isString(args) || _.isBoolean(args) || _.isFunction(args)) {
 				args = [args];
 			// Invalid validation
 			} else if (!isArray) {
@@ -503,7 +515,7 @@
 			}
 			if(validityMap[prop].isCorrected()) {
 				if(corrected === undefined) {
-					corrected = Utils.clone(obj);
+					corrected = _.clone(obj);
 					valid.setCorrectedValue(corrected);
 				}
 				corrected[prop] = validityMap[prop].getValue();
@@ -535,7 +547,7 @@
 	 * @param {function} [callback]		 					[optional] Callback instead of direct error messages. Callback is called with a Validity object as argument.
 	 */
 	Validation.validateArray = function(name, array, itemValidation, message, options, callback) {
-		if(Utils.isArray(name)) {
+		if(_.isArray(name)) {
 			callback = options;
 			options = message;
 			message = itemValidation;
@@ -543,7 +555,7 @@
 			array = name;
 			name = 'Array';
 		}
-		if(Utils.isPlainObject(message)){
+		if(_.isPlainObject(message)){
 			callback = options;
 			options = message;
 		}
@@ -551,23 +563,23 @@
 		var maxLength = _.get(options, 'maxLength');
 		var itemType = _.get(options, 'itemType');
 
-		callback = Validation.ensure(callback, Utils.isFunction, function() {});
+		callback = Validation.ensure(callback, _.isFunction, function() {});
 
-		if(!Utils.isArray(array)) {
+		if(!_.isArray(array)) {
 			var invalid = new Validation.Validity({name: name, input: array, valid: false, message: "Must be an array", type: 'array'});
 			callback(invalid);
 			return invalid;
 		}
-		if(!Utils.isArray(itemValidation)) {
+		if(!_.isArray(itemValidation)) {
 			itemValidation = [itemValidation];
 		}
 		var valid = new Validation.Validity(name, array, true);
 
-		if(!Utils.isNumber(minLength)) minLength = 0;
-		if(!Utils.isNumber(maxLength)) maxLength = Infinity;
-		if(!Utils.isString(itemType)) itemType = 'Item';
+		if(!_.isNumber(minLength)) minLength = 0;
+		if(!_.isNumber(maxLength)) maxLength = Infinity;
+		if(!_.isString(itemType)) itemType = 'Item';
 
-		var itemPlural = Utils.plural(itemType);
+		var itemPlural = String.plural(itemType);
 
 		if(array.length < minLength) {
 			var invalid2 = new Validation.Validity({
@@ -598,12 +610,12 @@
 			validityMap = {};
 		for(var i = 0; i < array.length; i++) {
 			item = array[i];
-			itemName = Utils.isString(item) ? item : i;
+			itemName = _.isString(item) ? item : i;
 
-			validationArgs = Utils.clone(itemValidation);
+			validationArgs = _.clone(itemValidation);
 			validationArgs.unshift(item);
 			validationArgs.unshift(itemName);
-			if(Utils.def(message)) {
+			if(Validation.def(message)) {
 				validationArgs.push(message);
 			}
 
@@ -620,7 +632,7 @@
 			}
 			if(validityMap[i].isCorrected()) {
 				if(corrected === undefined) {
-					corrected = Utils.clone(array);
+					corrected = _.clone(array);
 					valid.setCorrectedValue(corrected);
 				}
 				corrected[i] = validityMap[i].getValue();
@@ -653,7 +665,7 @@
 				return Validation.instanceof(checkClass, futureArg);
 			}
 		} else {
-			return Utils.isObject(checkClass) && arg instanceof checkClass;
+			return _.isObject(checkClass) && arg instanceof checkClass;
 		}
 	};
 
@@ -671,7 +683,7 @@
 		if (!evalFunc(variable)) {
 			sure = defaultValue;
 			if (Validation.def(message)) {
-				Utils.Log.error("Validation::ensure", message, variable);
+				Log.error("Validation::ensure", message, variable);
 			}
 		}
 
@@ -704,5 +716,5 @@
 		return !isNaN(parseFloat(variable)) || _.isString(variable);
 	};
 
-	module.exports.Validation = Validation;
+	module.exports = Validation;
 })();

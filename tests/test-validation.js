@@ -1,3 +1,6 @@
+const TestUtils = require('./qunit-test-utils');
+const _ = require('lodash');
+
 QUnit.module("Validation");
 
 QUnit.test("Utils.instanceof checks whether the given argument is an instanceof the given class.", function(assert) {
@@ -37,6 +40,7 @@ QUnit.test("Utils.validateOne with function as method calls the function to vali
         assert.equal(val, 1);
         return false;
     };
+
     var valid = Utils.validateOne('foo', 1, __checkTrue);
     var invalid = Utils.validateOne('foo', 1, __checkFalse);
 
@@ -82,11 +86,13 @@ QUnit.test("Utils.validateOne with string as method uses the Utils[method] funct
         assert.equal(value, 1);
         return false;
     };
-    TestUtils.replaceMethod(Utils, 'checkTrue', __checkTrue);
-    TestUtils.replaceMethod(Utils, 'checkFalse', __checkFalse);
 
-    var valid = Utils.validateOne('foo', 1, 'checkTrue');
-    var invalid = Utils.validateOne('foo', 1, 'checkFalse');
+	var UtilsClone = _.cloneDeep(Utils);
+	UtilsClone.setValidationMethod('checkTrue', __checkTrue);
+	UtilsClone.setValidationMethod('checkFalse', __checkFalse);
+
+    var valid = UtilsClone.validateOne('foo', 1, 'checkTrue');
+    var invalid = UtilsClone.validateOne('foo', 1, 'checkFalse');
 
     assert.ok(valid instanceof Utils.Validity);
     assert.equal(valid.getName(), 'foo');
@@ -396,8 +402,8 @@ QUnit.test("Utils.def returns false for null and undefined values, and true othe
 QUnit.test("Utils.ensure returns the given value if it matches the given condition, or a given default otheriwse.", function(assert) {
 	var val1 = {a:'foo'};
 	var val2 = 'foo';
-	var sure1 = Utils.ensure(val1, _.isObject, {});
-	var sure2 = Utils.ensure(val2, _.isObject, {});
+	var sure1 = Utils.ensure(val1, Utils.isObject, {});
+	var sure2 = Utils.ensure(val2, Utils.isObject, {});
 	assert.equal(sure1, val1);
 	assert.notEqual(sure2, val2);
 	assert.deepEqual(sure2, {});
@@ -420,9 +426,9 @@ QUnit.test("Utils.ensurePath creates a value at the given path if the current va
 		a: 'foo'
 	};
 
-	Utils.ensurePath(obj1, 'b.c', _.isNumber, 0);
-	Utils.ensurePath(obj2, 'b.c', _.isNumber, 0);
-	Utils.ensurePath(obj3, 'b.c', _.isNumber, 0);
+	Utils.ensurePath(obj1, 'b.c', Utils.isNumber, 0);
+	Utils.ensurePath(obj2, 'b.c', Utils.isNumber, 0);
+	Utils.ensurePath(obj3, 'b.c', Utils.isNumber, 0);
 
 	assert.equal(obj1.b.c, 0);
 	assert.equal(obj2.b.c, 123);

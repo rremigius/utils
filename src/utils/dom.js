@@ -1,11 +1,4 @@
 (function() {
-	var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
-	var Utils = isNode ? require('../utils-core').Utils : window.Utils;
-	if(!Utils) {
-		console.error("UtilsCore not loaded.");
-		return false;
-	}
-
 	var DOM = {};
 
 	DOM.getSelectedText = function() {
@@ -27,5 +20,5 @@
 		return txt.length > 0 ? txt : undefined;
 	};
 
-	module.exports.DOM = DOM;
+	module.exports = DOM;
 })();

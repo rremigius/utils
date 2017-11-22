@@ -1,18 +1,20 @@
 (function(){
-    var isNode = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+	const _ = require('lodash');
 
-    var Utils = require('./src/utils-core').Utils;
+	var utils = {
+		String: require('./src/utils/string'),
+		Validation: require('./src/utils/validation'),
+		Error: require('./src/utils/error'),
+		DOM: require('./src/utils/dom'),
+		Execution: require('./src/utils/execution')
+	};
 
-    var loaded = [];
-    loaded.push(require('./src/utils/string').String);
-    loaded.push(require('./src/utils/validation').Validation);
-    loaded.push(require('./src/utils/error').Error);
-	loaded.push(require('./src/utils/dom').DOM);
+	const Utils = require('./src/utils-core');
+	Utils.extendUtils(_, ['toString']);
 
-    for(var i=0; i<loaded.length; i++) {
-        Utils.extendUtils(loaded[i]);
-    }
+	for(var key in utils) {
+		Utils.extendUtils(utils[key]);
+	}
 
-    module.exports.Utils = Utils;
-    window.Utils = Utils;
+	window.Utils = Utils;
 })();
