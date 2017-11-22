@@ -1,7 +1,7 @@
 (function() {
 	var _ = require('lodash');
 	var String = require('./string');
-	var Error = require('./error');
+	var Err = require('./error').Error;
 	var Log = require('./log');
 
 	var Validation = {};
@@ -123,29 +123,29 @@
 	};
 
 	/**
-	 * Creates an Error object.
-	 * @returns {Error}
+	 * Creates an Err object.
+	 * @returns {Err}
 	 */
-	Validation.Validity.prototype.createError = function(includeErrorMap) {
+	Validation.Validity.prototype.createErr = function(includeErrMap) {
 		var message = this.getMessage();
 		if(message === undefined) {
 			return null;
 		}
 
 		var code = 'validation-' + this.getType();
-		var error = new Error({
+		var error = new Err({
 			data	: this.getInput(),
 			message	: this.createBadValueMessage(),
 			code	: code
 		});
-		if(includeErrorMap !== false) {
+		if(includeErrMap !== false) {
 			var validityMap = this.getValidityMap();
 			if(_.isObject(validityMap)) {
 				var errorMap = {};
 				for(var i in validityMap) {
-					var subError = validityMap[i].createError();
-					if(subError instanceof Error) {
-						errorMap[i] = subError;
+					var subErr = validityMap[i].createErr();
+					if(subErr instanceof Err) {
+						errorMap[i] = subErr;
 					}
 				}
 				error.errorMap = errorMap;
@@ -184,9 +184,9 @@
 			return false;
 		}
 
-		var error = validity.createError();
+		var error = validity.createErr();
 		var message = validity.createBadValueMessage(true);
-		message.push(". Error: ");
+		message.push(". Err: ");
 		message.push(error);
 		if(!validity.isValid()) {
 			Log.error.apply(Log, message);

@@ -1,3 +1,4 @@
+const Utils = require('../src/utils/validation');
 const TestUtils = require('./qunit-test-utils');
 const _ = require('lodash');
 
@@ -245,7 +246,7 @@ QUnit.test("Utils.validateObject validates each specified key-value pair in an o
     assert.notOk('qux' in validityMap1);
 
     assert.equal(valid2.isValid(), false);
-    assert.ok(Utils.isString(valid2.getMessage()));
+    assert.ok(_.isString(valid2.getMessage()));
 
     assert.equal(valid3.isValid(), true);
     assert.equal(valid3.isCorrected(), true);
@@ -402,8 +403,8 @@ QUnit.test("Utils.def returns false for null and undefined values, and true othe
 QUnit.test("Utils.ensure returns the given value if it matches the given condition, or a given default otheriwse.", function(assert) {
 	var val1 = {a:'foo'};
 	var val2 = 'foo';
-	var sure1 = Utils.ensure(val1, Utils.isObject, {});
-	var sure2 = Utils.ensure(val2, Utils.isObject, {});
+	var sure1 = Utils.ensure(val1, _.isObject, {});
+	var sure2 = Utils.ensure(val2, _.isObject, {});
 	assert.equal(sure1, val1);
 	assert.notEqual(sure2, val2);
 	assert.deepEqual(sure2, {});
@@ -426,9 +427,9 @@ QUnit.test("Utils.ensurePath creates a value at the given path if the current va
 		a: 'foo'
 	};
 
-	Utils.ensurePath(obj1, 'b.c', Utils.isNumber, 0);
-	Utils.ensurePath(obj2, 'b.c', Utils.isNumber, 0);
-	Utils.ensurePath(obj3, 'b.c', Utils.isNumber, 0);
+	Utils.ensurePath(obj1, 'b.c', _.isNumber, 0);
+	Utils.ensurePath(obj2, 'b.c', _.isNumber, 0);
+	Utils.ensurePath(obj3, 'b.c', _.isNumber, 0);
 
 	assert.equal(obj1.b.c, 0);
 	assert.equal(obj2.b.c, 123);

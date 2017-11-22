@@ -2,7 +2,7 @@
 	var $ = require('jquery');
 	var _ = require('lodash');
 	var Validation = require('./validation');
-	var Error = require('./error');
+	var Err = require('./error').Error;
 
 	var Execution = {};
 
@@ -168,7 +168,7 @@
 		var deferred = new Execution.Deferred();
 
 		if(!_.isPlainObject(steps)) {
-			deferred.reject(new Utils.Error("Steps must be an object."));
+			deferred.reject(new Error("Steps must be an object."));
 			return deferred.promise();
 		}
 
@@ -177,35 +177,25 @@
 			return deferred.resolve({}).promise();
 		}
 
-		var throwError = function(error, key) {
-			results[key] = error;
-
-			var throwableError = error;
-			throwableError.data = results;
-			deferred.reject(throwableError);
-		};
-
-		var results = {};
 		var next = function(i) {
 			if(i > keys.length -1) {
-				deferred.resolve(results);
+				deferred.resolve();
 				return;
 			}
 
 			var key = keys[i];
 			var step = steps[key];
 			if(!_.isFunction(step)) {
-				throwError(new Error("Step '" + key + "' is not a function."));
+				deferred.reject(new Error("Step '" + key + "' is not a function."));
 				return;
 			}
 
-			Execution.promise(step(results), function(val) { return val instanceof Error; })
-				.done(function(result) {
-					results[key] = result;
+			Execution.promise(step(), function(val) { return val instanceof Err; })
+				.done(function() {
 					next(i+1)
 				})
 				.fail(function(err) {
-					throwError(err);
+					deferred.reject(err);
 				});
 		};
 

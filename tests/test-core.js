@@ -1,3 +1,5 @@
+const Utils = require('../src/utils-core');
+
 QUnit.module("Utils");
 
 QUnit.test("Utils.extend adds properties from argument to Utils object.", function (assert) {

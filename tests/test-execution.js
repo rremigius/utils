@@ -1,3 +1,4 @@
+const Utils = require('../src/utils/execution');
 const TestUtils = require('./qunit-test-utils');
 
 QUnit.module("Execution");
@@ -5,24 +6,24 @@ QUnit.module("Execution");
 QUnit.test("Utils.execAsync executes several functions in serial and maps the results.", function(assert) {
 	var done = TestUtils.async(assert, 1000);
 
+	var order = '';
 	var steps = {
 		'foo': function() {
 			var deferred = Utils.Deferred();
 			setTimeout(function(){
-				deferred.resolve(1);
+				order += 'A';
+				deferred.resolve();
 			}, 100);
 			return deferred.promise();
 		},
 		'bar': function(results) {
-			return results['foo'] + 2;
+			order += 'B';
+			return;
 		}
 	};
 	Utils.execAsync(steps)
-		.done(function(results) {
-			assert.deepEqual(results, {
-				'foo': 1,
-				'bar': 3
-			});
+		.done(function() {
+			assert.equal(order, 'AB');
 			done();
 		})
 		.fail(function(err) {

@@ -1,3 +1,5 @@
+const Utils = require('../src/utils/string');
+
 QUnit.module("String");
 
 QUnit.test("Utils.valueToString with boolean or string prints a string of a value that has a maximum length as specified.", function(assert) {
