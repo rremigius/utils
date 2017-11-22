@@ -169,39 +169,6 @@
 		}
 	};
 
-	_.forEach({
-		isArguments: "Must be arguments.",
-		isArray: "Must be array.",
-		isBoolean: "Must be boolean.",
-		isDate: "Must be date.",
-		isElement: "Must be element.",
-		isEmpty: "Must be empty.",
-		isError: "Must be error.",
-		isFinite: "Must be finite.",
-		isFunction: "Must be function.",
-		isMatch: "Must be match",
-		isNaN: "Must be NaN.",
-		isNative: "Must be native.",
-		isNull: "Must be null.",
-		isNumber: "Must be number.",
-		isObject: "Must be object.",
-		isPlainObject: "Must be plain object.",
-		isRegExp: "Must be RegExp.",
-		isString: "Must be string.",
-		isTypedArray: "Must be typed array.",
-		isUndefined: "Must be undefined.",
-		isStringOrNumber: "Must be string or number."
-	}, function(message, key) {
-		// Lodash validation methods
-		Validation.setValidationMethod(key, _[key], message);
-	});
-	_.forEach({
-		// Utils validation methods
-		isStringOrNumber: "Must be string or number."
-	}, function(message, key) {
-		Validation.setValidationMethod(key, Validation[key], message);
-	});
-
 	/**
 	 *
 	 * @param {Validation.Validity} validity
@@ -715,6 +682,38 @@
 	Validation.isStringOrNumber = function(variable) {
 		return !isNaN(parseFloat(variable)) || _.isString(variable);
 	};
+
+	_.forEach({
+		isArguments: "Must be arguments.",
+		isArray: "Must be array.",
+		isBoolean: "Must be boolean.",
+		isDate: "Must be date.",
+		isElement: "Must be element.",
+		isEmpty: "Must be empty.",
+		isError: "Must be error.",
+		isFinite: "Must be finite.",
+		isFunction: "Must be function.",
+		isMatch: "Must be match",
+		isNaN: "Must be NaN.",
+		isNative: "Must be native.",
+		isNull: "Must be null.",
+		isNumber: "Must be number.",
+		isObject: "Must be object.",
+		isPlainObject: "Must be plain object.",
+		isRegExp: "Must be RegExp.",
+		isString: "Must be string.",
+		isTypedArray: "Must be typed array.",
+		isUndefined: "Must be undefined."
+	}, function(message, key) {
+		// Lodash validation methods
+		Validation.setValidationMethod(key, _[key], message);
+	});
+	_.forEach({
+		// Utils validation methods
+		isStringOrNumber: "Must be string or number."
+	}, function(message, key) {
+		Validation.setValidationMethod(key, Validation[key], message);
+	});
 
 	module.exports = Validation;
 })();

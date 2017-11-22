@@ -16,5 +16,5 @@
 		Utils.extendUtils(utils[key]);
 	}
 
-	window.Utils = Utils;
+	module.exports = Utils;
 })();

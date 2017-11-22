@@ -43,5 +43,5 @@
 		return this.message;
 	};
 
-	module.exports = Error;
+	module.exports.Error = Error;
 })();

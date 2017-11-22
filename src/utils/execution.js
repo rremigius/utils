@@ -73,7 +73,7 @@
 		var deferred = new Execution.Deferred();
 		var check = Validation.validate({
 			deferredMap  : [deferredMap, 'isObject'],
-			timeout	  : [timeout, 'isNumber', {default: 60000, warn: Utils.def(timeout)}]
+			timeout	  : [timeout, 'isNumber', {default: 60000, warn: Validation.def(timeout)}]
 		});
 		if(!check.isValid()) {
 			deferred.reject(new Error({message: "Could not wait for deferred. Invalid arguments.", data: {}, errorMap: {}}));
