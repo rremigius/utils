@@ -7,7 +7,7 @@
 	 * @param {Error} [originalError]	 Original error message (only if first argument was string).
 	 * @constructor
 	 */
-	Error = function(specs, originalError) {
+	const Error = function(specs, originalError) {
 		if(_.isString(specs)) {
 			specs = {
 				message: specs

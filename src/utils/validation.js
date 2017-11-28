@@ -126,7 +126,7 @@
 	 * Creates an Err object.
 	 * @returns {Err}
 	 */
-	Validation.Validity.prototype.createErr = function(includeErrMap) {
+	Validation.Validity.prototype.createError = function(includeErrMap) {
 		var message = this.getMessage();
 		if(message === undefined) {
 			return null;
@@ -143,7 +143,7 @@
 			if(_.isObject(validityMap)) {
 				var errorMap = {};
 				for(var i in validityMap) {
-					var subErr = validityMap[i].createErr();
+					var subErr = validityMap[i].createError();
 					if(subErr instanceof Err) {
 						errorMap[i] = subErr;
 					}
@@ -184,7 +184,7 @@
 			return false;
 		}
 
-		var error = validity.createErr();
+		var error = validity.createError();
 		var message = validity.createBadValueMessage(true);
 		message.push(". Err: ");
 		message.push(error);
