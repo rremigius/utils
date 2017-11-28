@@ -1,16 +1,16 @@
-const webpack = require('webpack');
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = function(env) {
 
 	return {
 		entry: {
-			all: './index.js'
+			test: './tests/index.js'
 		},
 
 		output: {
 			path: path.resolve(__dirname, 'dist'),
-			filename: 'utils.[name].min.js'
+			filename: 'utils.[name].js'
 		},
 
 		module: {
@@ -36,8 +36,15 @@ module.exports = function(env) {
 				}
 			]
 		},
+
 		plugins: [
-			new webpack.optimize.UglifyJsPlugin({minimize: true})
-		]
+			new HtmlWebpackPlugin({
+				template: './tests/index.html',
+				filename: 'index.html',
+				inject: 'body'
+			})
+		],
+
+		devtool: 'cheap-source-map'
 	}
 };

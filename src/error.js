@@ -1,6 +1,5 @@
 (function() {
 	var _ = require('lodash');
-	var Log = require('./log');
 
 	/**
 	 * @param {object|string} specs			 Error message or specs.
@@ -25,8 +24,6 @@
 		this.data		   = specs.data;
 		this.public			= specs.public || true;
 	};
-
-	Error.prototype.log = Log;
 
 	Error.prototype.message = 'An error occurred.';
 	Error.prototype.originalError = undefined;

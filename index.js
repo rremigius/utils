@@ -2,14 +2,14 @@
 	const _ = require('lodash');
 
 	var utils = {
-		String: require('./src/utils/string'),
-		Validation: require('./src/utils/validation'),
-		Error: require('./src/utils/error'),
-		DOM: require('./src/utils/dom'),
-		Execution: require('./src/utils/execution')
+		String: require('./src/string'),
+		Validation: require('./src/validation'),
+		Error: require('./src/error'),
+		DOM: require('./src/dom'),
+		Execution: require('./src/execution')
 	};
 
-	const Utils = require('./src/utils-core');
+	const Utils = require('./src/extend-utils');
 	Utils.extendUtils(_, ['toString']);
 
 	for(var key in utils) {

@@ -1,6 +1,6 @@
 (function() {
 	var _ = require('lodash');
-	var Log = require('./utils/log');
+	var Log = require('./log');
 
 	var Utils = {};
 
