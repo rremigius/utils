@@ -1,4 +1,4 @@
-const Utils = require('../src/utils/validation');
+const Utils = require('../src/validation');
 const TestUtils = require('./qunit-test-utils');
 const _ = require('lodash');
 

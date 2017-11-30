@@ -1,9 +1,9 @@
-const Utils = require('../src/utils/execution');
+const Utils = require('../src/execution');
 const TestUtils = require('./qunit-test-utils');
 
 QUnit.module("Execution");
 
-QUnit.test("Utils.execAsync executes several functions in serial and maps the results.", function(assert) {
+QUnit.test("Utils.synchronize executes several functions in serial and maps the results.", function(assert) {
 	var done = TestUtils.async(assert, 1000);
 
 	var order = '';
@@ -21,7 +21,7 @@ QUnit.test("Utils.execAsync executes several functions in serial and maps the re
 			return;
 		}
 	};
-	Utils.execAsync(steps)
+	Utils.synchronize(steps)
 		.done(function() {
 			assert.equal(order, 'AB');
 			done();

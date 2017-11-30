@@ -1,4 +1,4 @@
-const Utils = require('../src/utils/string');
+const Utils = require('../src/string');
 
 QUnit.module("String");
 

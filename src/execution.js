@@ -164,7 +164,7 @@
 		return deferred.promise();
 	};
 
-	Execution.execAsync = function(steps) {
+	Execution.synchronize = function(steps) {
 		var deferred = new Execution.Deferred();
 
 		if(!_.isPlainObject(steps)) {
@@ -174,10 +174,10 @@
 
 		var keys = Object.keys(steps);
 		if(keys.length === 0) {
-			return deferred.resolve({}).promise();
+			return deferred.resolve().promise();
 		}
 
-		var next = function(i) {
+		var next = function(i, previousResult) {
 			if(i > keys.length -1) {
 				deferred.resolve();
 				return;
@@ -190,9 +190,9 @@
 				return;
 			}
 
-			Execution.promise(step(), function(val) { return val instanceof Err; })
-				.done(function() {
-					next(i+1)
+			Execution.promise(step(previousResult), function(val) { return val instanceof Err; })
+				.done(function(result) {
+					next(i+1, result)
 				})
 				.fail(function(err) {
 					deferred.reject(err);

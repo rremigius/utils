@@ -1,4 +1,4 @@
-const Utils = require('../src/utils-core');
+const Utils = require('../src/extend-utils');
 
 QUnit.module("Utils");
 
