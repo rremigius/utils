@@ -404,11 +404,14 @@
 			validityMap: validityMap
 		});
 		if(!isValid) {
+			var msg = '';
 			if(name === defaultValidationName) {
-				valid.setMessage("Validation failed.");
+				msg += "Validation failed.";
 			} else {
-				valid.setMessage("Validation failed for '" + name + "'.");
+				msg += "Validation failed for '" + name + "'.";
 			}
+			msg += ' ' + consequence;
+			valid.setMessage(msg);
 		}
 		callback(valid);
 		return valid;
