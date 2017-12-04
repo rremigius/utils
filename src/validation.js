@@ -35,6 +35,28 @@
 	Validation.Validity.prototype._isCorrected = false;
 	Validation.Validity.prototype._info = undefined;
 
+	Validation.Validity.prototype.getErrorRoots = function() {
+		if(this.isValid()) return {};
+
+		var map = this.getValidityMap();
+		var roots = {};
+		if(!_.isObject(map)) {
+			roots = this.createBadValueMessage();
+		} else {
+			for(var i in map) {
+				var sub = map[i].getErrorRoots();
+				if(_.isString(sub)) {
+					roots[i] = sub;
+				} else {
+					for(var j in sub) {
+						roots[[i,j].join('.')] = sub[j];
+					}
+				}
+			}
+		}
+		return roots;
+	};
+
 	Validation.Validity.prototype.setType = function(type) {
 		this._type = type;
 	};
@@ -94,7 +116,6 @@
 			return undefined;
 		}
 
-		var name = this.getName();
 		var defaultTo = this.getCorrectedValue();
 		var value = this.getInput();
 		if(!returnAsArray) {
@@ -124,6 +145,7 @@
 
 	/**
 	 * Creates an Err object.
+	 * @param {boolean} [includeErrMap]
 	 * @returns {Err}
 	 */
 	Validation.Validity.prototype.createError = function(includeErrMap) {
@@ -141,14 +163,7 @@
 		if(includeErrMap !== false) {
 			var validityMap = this.getValidityMap();
 			if(_.isObject(validityMap)) {
-				var errorMap = {};
-				for(var i in validityMap) {
-					var subErr = validityMap[i].createError();
-					if(subErr instanceof Err) {
-						errorMap[i] = subErr;
-					}
-				}
-				error.errorMap = errorMap;
+				error.errorMap = this.getErrorRoots();
 			}
 		}
 
@@ -185,9 +200,18 @@
 		}
 
 		var error = validity.createError();
+		var showError = undefined;
+		if(Validation.def(error.originalError)) {
+			showError = error.originalError;
+		} else if (Validation.def(error.errorMap)) {
+			showError = error.errorMap;
+		}
+
 		var message = validity.createBadValueMessage(true);
-		message.push(". Err: ");
-		message.push(error);
+		if(showError !== undefined) {
+			message.push(". Error: ");
+			message.push(showError);
+		}
 		if(!validity.isValid()) {
 			Log.error.apply(Log, message);
 		} else if (validity.isCorrected()) {
