@@ -167,8 +167,8 @@
 	Execution.synchronize = function(steps) {
 		var deferred = new Execution.Deferred();
 
-		if(!_.isPlainObject(steps)) {
-			deferred.reject(new Error("Steps must be an object."));
+		if(!_.isObject(steps)) {
+			deferred.reject(new Error("Steps must be an object or array."));
 			return deferred.promise();
 		}
 
