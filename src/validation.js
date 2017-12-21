@@ -88,7 +88,16 @@
 	Validation.Validity.prototype.getValue = function() {
 		if(!this.isValid()) return undefined;
 		if(this._isCorrected) return this._corrected;
-		return this._input;
+
+		var value = this._input;
+		if(_.isObject(this._validityMap)) {
+			value = {};
+			for(var i in this._validityMap) {
+				value[i] = this._validityMap[i].getValue();
+			}
+		}
+
+		return value;
 	};
 	Validation.Validity.prototype.setMessage = function(message) {
 		this._message = message;
