@@ -91,7 +91,6 @@
 
 		var value = this._input;
 		if(_.isObject(this._validityMap)) {
-			value = {};
 			for(var i in this._validityMap) {
 				value[i] = this._validityMap[i].getValue();
 			}
@@ -292,10 +291,10 @@
 			valid = method;
 		// validateArray
 		} else if (_.isArray(method)) {
-			valid = Validation.validateArray(name, value, method, undefined, _.get(options, 'array'), false);
+			valid = Validation.validateArray(name, value, method, undefined, _.get(options, 'array'));
 		// validateObject
 		} else if (_.isObject(method)) {
-			valid = Validation.validateObject(name, value, method, undefined, false);
+			valid = Validation.validateObject(name, value, method, undefined, options);
 		// Boolean validation
 		} else {
 			valid = method === true;
