@@ -40,5 +40,19 @@
 		return this.message;
 	};
 
+	Error.prototype.getDeepestError = function() {
+		if(this.originalError instanceof Error) {
+			return this.originalError.getDeepestError();
+		}
+		if(_.isObject(this.errorMap)) {
+			let errorKeys = Object.keys(this.errorMap);
+			if(_.isObject(this.errorMap) && errorKeys.length > 0) {
+				return this.errorMap[errorKeys[0]].getDeepestError();
+			}
+		}
+
+		return this;
+	};
+
 	module.exports.Error = Error;
 })();
