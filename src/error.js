@@ -2,16 +2,18 @@
 	var _ = require('lodash');
 
 	/**
-	 * @param {object|string} specs			 Error message or specs.
-	 * @param {Error} [originalError]	 Original error message (only if first argument was string).
+	 * @param {object|string} specs		Error message or specs.
+	 * @param {Error} [originalError]	Original error message (only if first argument was string).
 	 * @constructor
 	 */
-	const Error = function(specs, originalError) {
+	const BetterError = function(specs, originalError) {
+		Error.call(this);
+
 		if(_.isString(specs)) {
 			specs = {
 				message: specs
 			};
-			if(originalError instanceof Error) {
+			if(originalError instanceof BetterError) {
 				specs.originalError = originalError;
 			}
 		}
@@ -19,29 +21,30 @@
 
 		this.message		= specs.message;
 		this.originalError  = specs.originalError;
-		this.errorMap	   = specs.errorMap;
-		this.code		   = specs.code;
-		this.data		   = specs.data;
+		this.errorMap	   	= specs.errorMap;
+		this.code		   	= specs.code;
+		this.data		   	= specs.data;
 		this.public			= specs.public || true;
 	};
+	BetterError.prototype = Object.create(Error.prototype);
 
-	Error.prototype.message = 'An error occurred.';
-	Error.prototype.originalError = undefined;
-	Error.prototype.errorMap = undefined;
-	Error.prototype.code = undefined;
-	Error.prototype.data = undefined;
-	Error.prototype.origin = undefined;
-	Error.prototype.stack = undefined;
+	BetterError.prototype.message = 'An Error occurred.';
+	BetterError.prototype.originalError = undefined;
+	BetterError.prototype.errorMap = undefined;
+	BetterError.prototype.code = undefined;
+	BetterError.prototype.data = undefined;
+	BetterError.prototype.origin = undefined;
+	BetterError.prototype.stack = undefined;
 
-	Error.prototype.toString = function() {
+	BetterError.prototype.toString = function() {
 		return this.message;
 	};
-	Error.prototype.getMessage = function() {
+	BetterError.prototype.getMessage = function() {
 		return this.message;
 	};
 
-	Error.prototype.getDeepestError = function() {
-		if(this.originalError instanceof Error) {
+	BetterError.prototype.getDeepestError = function() {
+		if(this.originalError instanceof BetterError) {
 			return this.originalError.getDeepestError();
 		}
 		if(_.isObject(this.errorMap)) {
@@ -54,5 +57,5 @@
 		return this;
 	};
 
-	module.exports.Error = Error;
+	module.exports.Error = BetterError;
 })();
