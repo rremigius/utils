@@ -41,11 +41,13 @@
 		var map = this.getValidityMap();
 		var roots = {};
 		if(!_.isObject(map)) {
-			roots = this.createBadValueMessage();
+			roots = this.createError();
 		} else {
 			for(var i in map) {
 				var sub = map[i].getErrorRoots();
 				if(_.isString(sub)) {
+					roots[i] = sub;
+				} else if (sub instanceof Err) {
 					roots[i] = sub;
 				} else {
 					for(var j in sub) {
