@@ -191,17 +191,20 @@
 		Validation._validationMethods[name] = {
 			func: func,
 			message: message
-		}
+		};
 	};
 
 	/**
 	 *
 	 * @param {Validation.Validity} validity
+	 * @param {object} [logger]		[Optional] A Logging object with 'warn' and 'error' methods.
 	 * @returns {boolean}   Whether or not the validity was logged.
 	 */
-	Validation.logValidity = function(validity) {
+	Validation.logValidity = function(validity, logger = null) {
+		if(logger === null) logger = Log;
+
 		if(!(validity instanceof Validation.Validity)) {
-			Log.error("Could not log validity.", validity);
+			logger.error("Could not log validity.", validity);
 			return false;
 		}
 
@@ -223,9 +226,9 @@
 			message.push(showError);
 		}
 		if(!validity.isValid()) {
-			Log.error.apply(Log, message);
+			logger.error.apply(logger, message);
 		} else if (validity.isCorrected()) {
-			Log.warn.apply(Log, message);
+			logger.warn.apply(logger, message);
 		}
 
 		return true;
@@ -349,6 +352,14 @@
 		return valid;
 	};
 
+	Validation.isLogger = function(obj) {
+		if(!_.isObject(obj)) return false;
+		return _.isFunction(obj.log) &&
+			_.isFunction(obj.error) &&
+			_.isFunction(obj.warn) &&
+			_.isFunction(obj.info);
+	};
+
 	/**
 	 * Validates a set of values, based on the given parameters.
 	 *
@@ -378,7 +389,15 @@
 
 		var validityMap = {};
 		var inputMap = {};
-		callback = Validation.ensure(callback, _.isFunction, callback === false ? function(){} : Validation.logValidity);
+		if(Validation.isLogger(callback)) {
+			(function(logger) {
+				callback = function(validity) {
+					return Validation.logValidity(validity, logger);
+				};
+			})(callback);
+		} else {
+			callback = Validation.ensure(callback, _.isFunction, callback === false ? function(){} : Validation.logValidity);
+		}
 
 		if(consequence === undefined) {
 			consequence = '';

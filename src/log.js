@@ -1,38 +1,66 @@
-(function() {
-
-	const _ = require('lodash');
-
-	const Log = {
-		_logger: console
-	};
-
-	Log.setLogger = function(logger) {
-		Log._logger = logger;
-	};
-
-	Log._log = function(method, args) {
-		if(!_.isFunction(Log._logger[method])) {
-			console.error("Logger does not have method '" + method + "'.");
-			return;
+class Log {
+	constructor(name, driver) {
+		this.name = name || '';
+		this.driver = driver || console;
+		this.stackLevels = ['error', 'warn'];
+	}
+	static factory(name) {
+		return new Log(name);
+	}
+	static instance() {
+		if(Log._instance === null) {
+			Log._instance = new Log();
 		}
-		Log._logger[method].apply(Log._logger, args);
-	};
+		return Log._instance;
+	}
+	static error() {
+		Log.instance().error.apply(Log.instance(), arguments);
+	}
+	static info() {
+		Log.instance().info.apply(Log.instance(), arguments);
+	}
+	static warn() {
+		Log.instance().info.apply(Log.instance(), arguments);
+	}
+	static log() {
+		Log.instance().info.apply(Log.instance(), arguments);
+	}
+	static trace() {
+		Log.instance().info.apply(Log.instance(), arguments);
+	}
+	static setSuppressErrors(status) {
+		Log._suppressErrors = status === true;
+	}
+	static setSuppressWarnings(status) {
+		Log._suppressWarnings = status === true;
+	}
+	error() {
+		if (!Log._suppressErrors) {
+			this.driver.error.apply(this.driver, this._addName(arguments));
+		}
+	}
+	info(){
+		this.driver.info.apply(this.driver, this._addName(arguments));
+	}
+	warn(){
+		if(!Log._suppressWarnings) {
+			this.driver.warn.apply(this.driver, this._addName(arguments));
+		}
+	}
+	log(){
+		this.driver.log.apply(this.driver, this._addName(arguments));
+	}
+	trace() {
+		this.driver.trace.apply(this.driver, this._addName(arguments));
+	}
 
-	Log.log = function() {
-		Log._log('log', arguments);
-	};
-	Log.info = function() {
-		Log._log('info', arguments);
-	};
-	Log.warn = function() {
-		Log._log('warn', arguments);
-	};
-	Log.error = function() {
-		Log._log('error', arguments);
-	};
-	Log.stack = function() {
-		Log._log('stack', arguments);
-	};
+	_addName(args) {
+		[].unshift.apply(args, [this.name, ":"]);
 
-	module.exports = Log;
-})();
+		return args;
+	}
+}
+
+Log._instance = null;
+
+module.exports = Log;
