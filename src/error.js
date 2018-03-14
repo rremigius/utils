@@ -33,7 +33,6 @@
 	BetterError.prototype.errorMap = undefined;
 	BetterError.prototype.code = undefined;
 	BetterError.prototype.data = undefined;
-	BetterError.prototype.origin = undefined;
 	BetterError.prototype.stack = undefined;
 
 	BetterError.prototype.toString = function() {
@@ -56,6 +55,24 @@
 
 		return this;
 	};
+
+	BetterError.prototype.export = function() {
+		let errorMap = {};
+		_.forEach(errorMap, (value, key) => {
+			if(value instanceof BetterError) {
+				errorMap[key] = value.export();
+				return;
+			}
+			errorMap[key] = value;
+		});
+		return {
+			message: this.message,
+			code: this.code,
+			data: this.data,
+			errorMap: errorMap,
+			originalError: this.originalError.export()
+		}
+	}
 
 	module.exports.Error = BetterError;
 })();
