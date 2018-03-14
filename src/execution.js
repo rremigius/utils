@@ -9,7 +9,7 @@
 	Execution.Deferred = $.Deferred;
 
 	/**
-	 * Tests whether the object is a Promise from a $.Deferred object.
+	 * Tests whether the object is a Promise object (with done and fail methods).
 	 * @param value
 	 * @returns {boolean}
 	 */
@@ -17,12 +17,14 @@
 		if(!_.isObject(value)) {
 			return false;
 		}
-		if (typeof value.then !== "function") {
+		if (typeof value.done !== "function") {
 			return false;
 		}
-		var promiseThenSrc = String(Execution.Deferred().then);
-		var valueThenSrc = String(value.then);
-		return promiseThenSrc === valueThenSrc;
+		if (typeof value.fail !== "function") {
+			return false;
+		}
+
+		return true;
 	};
 
 	/**
@@ -76,7 +78,7 @@
 			timeout	  : [timeout, 'isNumber', {default: 60000, warn: Validation.def(timeout)}]
 		});
 		if(!check.isValid()) {
-			deferred.reject(new Error({message: "Could not wait for deferred. Invalid arguments.", data: {}, errorMap: {}}));
+			deferred.reject(new Err({message: "Could not wait for deferred. Invalid arguments.", data: {}, errorMap: {}}));
 			return deferred.promise();
 		}
 		var valid = check.getValue();
@@ -102,10 +104,10 @@
 			timedOut = true;
 			for(var i in state) {
 				if(state[i].status === 'pending') {
-					errors[i] = new Error("Timed out.");
+					errors[i] = new Err("Timed out.");
 				}
 			}
-			deferred.reject(new Error({
+			deferred.reject(new Err({
 				code: 'timeout',
 				message: "Timeout during async operations.",
 				data: results,
@@ -124,7 +126,7 @@
 			if(done) {
 				clearTimeout(_timeout);
 				if(Object.keys(errors).length > 0) {
-					deferred.reject(new Error({message: "Error(s) occurred during async operations.", errorMap: errors, data: results}));
+					deferred.reject(new Err({message: "Error(s) occurred during async operations.", errorMap: errors, data: results}));
 				} else {
 					deferred.resolve(results)
 				}
@@ -135,7 +137,7 @@
 			if(!Execution.isPromise(valid.deferredMap[i])) {
 				state[i] = {
 					status: 'rejected',
-					data: new Error("Not a promise.")
+					data: new Err("Not a promise.")
 				};
 				errors[i] = state[i].data
 			}
@@ -168,7 +170,7 @@
 		var deferred = new Execution.Deferred();
 
 		if(!_.isObject(steps)) {
-			deferred.reject(new Error("Steps must be an object or array."));
+			deferred.reject(new Err("Steps must be an object or array."));
 			return deferred.promise();
 		}
 
@@ -186,7 +188,7 @@
 			var key = keys[i];
 			var step = steps[key];
 			if(!_.isFunction(step)) {
-				deferred.reject(new Error("Step '" + key + "' is not a function."));
+				deferred.reject(new Err("Step '" + key + "' is not a function."));
 				return;
 			}
 
