@@ -65,12 +65,13 @@
 			}
 			errorMap[key] = value;
 		});
+		let originalExport = this.originalError instanceof BetterError ? this.originalError.export() : undefined;
 		return {
 			message: this.message,
 			code: this.code,
 			data: this.data,
 			errorMap: errorMap,
-			originalError: this.originalError.export()
+			originalError: originalExport
 		}
 	}
 
