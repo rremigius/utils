@@ -691,6 +691,7 @@
 			return _.isObject(checkClass) && arg instanceof checkClass;
 		}
 	};
+	Validation.instanceOf = Validation.instanceof;
 
 	/**
 	 * Checks whether the given argument is defined, and not null.
