@@ -15,6 +15,9 @@
 			};
 			if(originalError instanceof BetterError) {
 				specs.originalError = originalError;
+				if(specs.code === undefined) {
+					specs.code = this.originalError.code;
+				}
 			}
 		}
 		specs = specs || {};
