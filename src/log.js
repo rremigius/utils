@@ -63,4 +63,4 @@ class Log {
 
 Log._instance = null;
 
-module.exports = Log;
+export default Log;
