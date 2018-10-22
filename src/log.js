@@ -20,13 +20,13 @@ class Log {
 		Log.instance().info.apply(Log.instance(), arguments);
 	}
 	static warn() {
-		Log.instance().info.apply(Log.instance(), arguments);
+		Log.instance().warn.apply(Log.instance(), arguments);
 	}
 	static log() {
-		Log.instance().info.apply(Log.instance(), arguments);
+		Log.instance().log.apply(Log.instance(), arguments);
 	}
 	static trace() {
-		Log.instance().info.apply(Log.instance(), arguments);
+		Log.instance().trace.apply(Log.instance(), arguments);
 	}
 	static setSuppressErrors(status) {
 		Log._suppressErrors = status === true;
