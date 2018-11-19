@@ -1,9 +1,9 @@
-var _ = require('lodash');
-var String = require('./string');
-var Err = require('./error').Error;
-var Log = require('./log');
+import _ from 'lodash';
+import String from './string';
+import Err from './error';
+import Log from './log';
 
-var Validation = {};
+const Validation = {};
 
 Validation.Validity = function (name, input, valid, message) {
   if(arguments.length === 1 && _.isObject(name)) {
@@ -25,6 +25,10 @@ Validation.Validity = function (name, input, valid, message) {
     this._message = message;
   }
 };
+Validation.Validity.createValidValidity = function(name) {
+  return new Validation.Validity(name);
+};
+
 Validation.Validity.prototype._type = 'value';
 Validation.Validity.prototype._name = undefined;
 Validation.Validity.prototype._input = undefined;
@@ -672,6 +676,50 @@ Validation.validateArray = function(name, array, itemValidation, message, option
 
   callback(valid);
   return valid;
+};
+
+/**
+ *
+ * Validates a value, based on the given parameters
+ *
+ * Example usage: Validation.validateOne("myVariable", "apple", "isString", "Must be a string", {default: "banana", warn: false});
+ *
+ * @param {string} name					    The name of the variable to check.
+ * @param value							        The value of the variable to check.
+ * @param method	                  Boolean check for validity, or name of util for validation.
+ * @param {string} [message]				[Optional] The message to display when variable is not valid.
+ * @param {object} options				  An object of extra option.
+ * @param [options.default]				  A default value if given value is invalid. If not provided, validation will fail if invalid value.
+ * @param {boolean} [options.warn]	If false, no warning will be given if default is chosen. Defaults to true.
+ *
+ * @throws Err
+ * @return {boolean}
+ */
+Validation.assertOne = function(name, value, method, message, options) {
+  let valid = Validation.validateOne(name, value, method, message, options);
+  if(!valid.isValid()) {
+    throw valid.createError();
+  }
+
+  return true;
+};
+
+/**
+ * Sort form of validate. Throws an exception with error information when validation fails.
+ * @param value           The value to validate.
+ * @param specifications  The validation specification object.
+ * @param message         An error message to pass with the thrown exception.
+ *
+ * @throws Err
+ * @return {boolean}
+ */
+Validation.assert = function(value, specifications, message) {
+  let valid = Validation.validate(value, specifications, message);
+  if(!valid.isValid()) {
+    throw new Err(message, valid.createError());
+  }
+
+  return true;
 };
 
 /**
