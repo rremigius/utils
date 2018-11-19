@@ -3,9 +3,7 @@ import String from './string';
 import Err from './error';
 import Log from './log';
 
-const Validation = {};
-
-Validation.Validity = function (name, input, valid, message) {
+const Validity = function (name, input, valid, message) {
   if(arguments.length === 1 && _.isObject(name)) {
     var settings = name;
     this.setName(settings.name);
@@ -25,20 +23,20 @@ Validation.Validity = function (name, input, valid, message) {
     this._message = message;
   }
 };
-Validation.Validity.createValidValidity = function(name) {
-  return new Validation.Validity(name);
+Validity.createValidValidity = function(name) {
+  return new Validity(name);
 };
 
-Validation.Validity.prototype._type = 'value';
-Validation.Validity.prototype._name = undefined;
-Validation.Validity.prototype._input = undefined;
-Validation.Validity.prototype._valid = true;
-Validation.Validity.prototype._validityMap = undefined;
-Validation.Validity.prototype._corrected = undefined;
-Validation.Validity.prototype._isCorrected = false;
-Validation.Validity.prototype._info = undefined;
+Validity.prototype._type = 'value';
+Validity.prototype._name = undefined;
+Validity.prototype._input = undefined;
+Validity.prototype._valid = true;
+Validity.prototype._validityMap = undefined;
+Validity.prototype._corrected = undefined;
+Validity.prototype._isCorrected = false;
+Validity.prototype._info = undefined;
 
-Validation.Validity.prototype.getErrorRoots = function() {
+Validity.prototype.getErrorRoots = function() {
   if(this.isValid()) return {};
 
   var map = this.getValidityMap();
@@ -62,35 +60,35 @@ Validation.Validity.prototype.getErrorRoots = function() {
   return roots;
 };
 
-Validation.Validity.prototype.setType = function(type) {
+Validity.prototype.setType = function(type) {
   this._type = type;
 };
-Validation.Validity.prototype.getType = function() {
+Validity.prototype.getType = function() {
   return this._type;
 };
-Validation.Validity.prototype.setName = function(name) {
+Validity.prototype.setName = function(name) {
   this._name = name;
 };
-Validation.Validity.prototype.getName = function() {
+Validity.prototype.getName = function() {
   return this._name;
 };
-Validation.Validity.prototype.setInfo = function(info) {
+Validity.prototype.setInfo = function(info) {
   this._info = info;
 };
-Validation.Validity.prototype.getInfo = function() {
+Validity.prototype.getInfo = function() {
   return this._info;
 };
-Validation.Validity.prototype.getInput = function() {
+Validity.prototype.getInput = function() {
   return this._input;
 };
-Validation.Validity.prototype.setInput = function(input) {
+Validity.prototype.setInput = function(input) {
   this._input = input;
 };
-Validation.Validity.prototype.setValid = function(valid) {
+Validity.prototype.setValid = function(valid) {
   this._valid = valid !== false;
 };
-Validation.Validity.prototype.isValid = function() { return this._valid; };
-Validation.Validity.prototype.getValue = function() {
+Validity.prototype.isValid = function() { return this._valid; };
+Validity.prototype.getValue = function() {
   if(!this.isValid()) return undefined;
   if(this._isCorrected) return this._corrected;
 
@@ -103,27 +101,27 @@ Validation.Validity.prototype.getValue = function() {
 
   return value;
 };
-Validation.Validity.prototype.setMessage = function(message) {
+Validity.prototype.setMessage = function(message) {
   this._message = message;
 };
-Validation.Validity.prototype.getMessage = function() { return this._message; };
-Validation.Validity.prototype.isCorrected = function () {
+Validity.prototype.getMessage = function() { return this._message; };
+Validity.prototype.isCorrected = function () {
   return this._isCorrected;
 };
-Validation.Validity.prototype.getCorrectedValue = function() {
+Validity.prototype.getCorrectedValue = function() {
   return this._corrected;
 };
-Validation.Validity.prototype.setCorrectedValue = function(value) {
+Validity.prototype.setCorrectedValue = function(value) {
   this._isCorrected = true;
   this._corrected = value;
 };
-Validation.Validity.prototype.getValidityMap = function() {
+Validity.prototype.getValidityMap = function() {
   return this._validityMap;
 };
-Validation.Validity.prototype.setValidityMap = function(map) {
+Validity.prototype.setValidityMap = function(map) {
   this._validityMap = map;
 };
-Validation.Validity.prototype.createBadValueMessage = function(returnAsArray) {
+Validity.prototype.createBadValueMessage = function(returnAsArray) {
   var why = this.getMessage();
   if(why === undefined) {
     return undefined;
@@ -161,7 +159,7 @@ Validation.Validity.prototype.createBadValueMessage = function(returnAsArray) {
  * @param {boolean} [includeErrMap]
  * @returns {Err}
  */
-Validation.Validity.prototype.createError = function(includeErrMap) {
+Validity.prototype.createError = function(includeErrMap) {
   var message = this.getMessage();
   if(message === undefined) {
     return null;
@@ -183,30 +181,16 @@ Validation.Validity.prototype.createError = function(includeErrMap) {
   return error;
 };
 
-Validation._validationMethods = {};
-
-Validation.setValidationMethod = function(name, func, message) {
-  if(!_.isFunction(func)) {
-    Log.error("Function given for validation method '" + name + "' is not a function.");
-    return false;
-  }
-
-  Validation._validationMethods[name] = {
-    func: func,
-    message: message
-  };
-};
-
 /**
  *
- * @param {Validation.Validity} validity
+ * @param {Validity} validity
  * @param {object} [logger]		[Optional] A Logging object with 'warn' and 'error' methods.
  * @returns {boolean}   Whether or not the validity was logged.
  */
-Validation.logValidity = function(validity, logger = null) {
+const logValidity = function(validity, logger = null) {
   if(logger === null) logger = Log;
 
-  if(!(validity instanceof Validation.Validity)) {
+  if(!(validity instanceof Validity)) {
     logger.error("Could not log validity.", validity);
     return false;
   }
@@ -217,9 +201,9 @@ Validation.logValidity = function(validity, logger = null) {
 
   var error = validity.createError();
   var showError = undefined;
-  if(Validation.def(error.originalError)) {
+  if(def(error.originalError)) {
     showError = error.originalError;
-  } else if (Validation.def(error.errorMap)) {
+  } else if (def(error.errorMap)) {
     showError = error.errorMap;
   }
 
@@ -237,21 +221,21 @@ Validation.logValidity = function(validity, logger = null) {
   return true;
 };
 
-Validation.getValidationMethod = function(method) {
+const getValidationMethod = function(method) {
   if(!_.isString(method)) return undefined;
-  return _.get(Validation._validationMethods[method], 'func');
+  return _.get(_validationMethods[method], 'func');
 };
 
-Validation.getValidationMessage = function(method) {
+const getValidationMessage = function(method) {
   if(!_.isString(method)) return undefined;
-  return _.get(Validation._validationMethods[method], 'message');
+  return _.get(_validationMethods[method], 'message');
 };
 
 /**
  *
  * Validates a value, based on the given parameters
  *
- * Example usage: Validation.validateOne("myVariable", "apple", "isString", "Must be a string", {default: "banana", warn: false});
+ * Example usage: validateOne("myVariable", "apple", "isString", "Must be a string", {default: "banana", warn: false});
  *
  * @param {string} name					 The name of the variable to check.
  * @param value							 The value of the variable to check.
@@ -261,10 +245,10 @@ Validation.getValidationMessage = function(method) {
  * @param [options.default]				 A default value if given value is invalid. If not provided, validation will fail if invalid value.
  * @param {boolean} [options.warn]		  If false, no warning will be given if default is chosen. Defaults to true.
  *
- * @return {Validation.Validity}
+ * @return {Validity}
  */
-Validation.validateOne = function(name, value, method, message, options) {
-  /** @type {Validation.Validity|boolean} */
+const validateOne = function(name, value, method, message, options) {
+  /** @type {Validity|boolean} */
   var valid = undefined;
   if(_.isPlainObject(message)) { // message was omitted
     options = message;
@@ -274,18 +258,18 @@ Validation.validateOne = function(name, value, method, message, options) {
   // Get method from utils, if method is string
   if(_.isString(method)) {
     // Get function from utils
-    var utilMethod = Validation.getValidationMethod(method);
+    var utilMethod = getValidationMethod(method);
 
     // If no message is provided, try to find one from validationMessages
     if (!_.isString(message)) {
-      message = Validation.getValidationMessage(method);
+      message = getValidationMessage(method);
       if(message === undefined) {
         message = "Must be " + method + ".";
       }
     }
     if(!_.isFunction(utilMethod)) {
       message = "Don't know how to validate '"+method+"'";
-      method = new Validation.Validity(name, value, false, message);
+      method = new Validity(name, value, false, message);
     } else {
       method = utilMethod;
     }
@@ -293,23 +277,23 @@ Validation.validateOne = function(name, value, method, message, options) {
 
   // Apply validation method
   if(_.isFunction(method)) {
-    valid = method.apply(Validation, [value]);
+    valid = method.apply({}, [value]);
   // Validity object
-  } else if (method instanceof Validation.Validity) {
+  } else if (method instanceof Validity) {
     valid = method;
   // validateArray
   } else if (_.isArray(method)) {
-    valid = Validation.validateArray(name, value, method, undefined, _.get(options, 'array'));
+    valid = validateArray(name, value, method, undefined, _.get(options, 'array'));
   // validateObject
   } else if (_.isObject(method)) {
-    valid = Validation.validateObject(name, value, method, undefined, options);
+    valid = validateObject(name, value, method, undefined, options);
   // Boolean validation
   } else {
     valid = method === true;
   }
 
-  if(!(valid instanceof Validation.Validity)) {
-    valid = new Validation.Validity(name, value, valid);
+  if(!(valid instanceof Validity)) {
+    valid = new Validity(name, value, valid);
   }
 
   // Feedback
@@ -355,7 +339,7 @@ Validation.validateOne = function(name, value, method, message, options) {
   return valid;
 };
 
-Validation.isLogger = function(obj) {
+const isLogger = function(obj) {
   if(!_.isObject(obj)) return false;
   return _.isFunction(obj.log) &&
     _.isFunction(obj.error) &&
@@ -366,20 +350,20 @@ Validation.isLogger = function(obj) {
 /**
  * Validates a set of values, based on the given parameters.
  *
- * Example usage: Validation.validate("myValidation", {a: ["apple", "isString"]}, "Validation failed.");
+ * Example usage: validate("myValidation", {a: ["apple", "isString"]}, "Validation failed.");
  *
  * @param {string} name			 The name by which to identify this validation.
  * @param {object} checks		   An object of checks. Where the keys are the names of the variables and the
- *								  values arrays of parameters that are passed to {@link Validation.validateOne}, prepended by
+ *								  values arrays of parameters that are passed to {@link validateOne}, prepended by
  *								  <me> and <checks>.
  * @param {string} [consequence]	[optional] A message to be given if validation fails.
  * @param {function} [callback]	 [optional] Callback instead of direct error messages. Callback is called with a Validity object as argument.
  *
- * @returns {Validation.Validity}		If validation was passed, an object will be returned containing a the keys
+ * @returns {Validity}		If validation was passed, an object will be returned containing a the keys
  *								  of the given checks object, with their validated values.
  *								  If any of the validations failed, FALSE will be returned.
  */
-Validation.validate = function(name, checks, consequence, callback) {
+const validate = function(name, checks, consequence, callback) {
   var defaultValidationName = 'Validation';
 
   // Can also be called without a name
@@ -392,14 +376,14 @@ Validation.validate = function(name, checks, consequence, callback) {
 
   var validityMap = {};
   var inputMap = {};
-  if(Validation.isLogger(callback)) {
+  if(isLogger(callback)) {
     (function(logger) {
       callback = function(validity) {
-        return Validation.logValidity(validity, logger);
+        return logValidity(validity, logger);
       };
     })(callback);
   } else {
-    callback = Validation.ensure(callback, _.isFunction, callback === false ? function(){} : Validation.logValidity);
+    callback = ensure(callback, _.isFunction, callback === false ? function(){} : logValidity);
   }
 
   if(consequence === undefined) {
@@ -409,12 +393,12 @@ Validation.validate = function(name, checks, consequence, callback) {
   if(_.isObject(checks)) {
     for(var i in checks) {
       checks[i].unshift(i);
-      validityMap[i] = Validation.validateOne.apply(Validation, checks[i]);
+      validityMap[i] = validateOne.apply(Validation, checks[i]);
       inputMap[i] = checks[i][1];
     }
   } else {
     var invalidChecksMessage = "Parameter 'checks' must be object. " + consequence;
-    callback(new Validation.Validity(name, checks, invalidChecksMessage));
+    callback(new Validity(name, checks, invalidChecksMessage));
     return false;
   }
 
@@ -428,7 +412,7 @@ Validation.validate = function(name, checks, consequence, callback) {
   }
 
   // Create Validity object
-  var valid = new Validation.Validity({
+  var valid = new Validity({
     type: 'multiple',
     name: name,
     input: inputMap,
@@ -452,7 +436,7 @@ Validation.validate = function(name, checks, consequence, callback) {
 /**
  * Validates an object, the same way .validate validates isolated values.
  *
- * Example usage: Validation.validateObject('myObject', {a: 'apple'}, {a: ['isString']}).
+ * Example usage: validateObject('myObject', {a: 'apple'}, {a: ['isString']}).
  *
  * @param {string} name			 	The name of the validation.
  * @param {object} obj			  	The object to check.
@@ -462,9 +446,9 @@ Validation.validate = function(name, checks, consequence, callback) {
  * @param {string} [options]		Options for validatObject.
  * @param {function} [callback]	 	A function that takes a Validity object as argument.
  *
- * @return {Validation.Validity}
+ * @return {Validity}
  */
-Validation.validateObject = function(name, obj, checks, message, options, callback) {
+const validateObject = function(name, obj, checks, message, options, callback) {
   if(_.isObject(name)) {
     callback = message;
     message = checks;
@@ -479,16 +463,16 @@ Validation.validateObject = function(name, obj, checks, message, options, callba
   if(_.isFunction(options)) {
     callback = options;
   }
-  callback = Validation.ensure(callback, _.isFunction, function() {});
+  callback = ensure(callback, _.isFunction, function() {});
 
   if(!_.isObject(checks)) {
-    var invalid = new Validation.Validity(name, checks, false, "Invalid 'checks' parameter. Must be object.");
+    var invalid = new Validity(name, checks, false, "Invalid 'checks' parameter. Must be object.");
     callback(invalid);
     return invalid;
   }
 
   if(!_.isObject(obj)) {
-    var invalid = new Validation.Validity(name, checks, false, "Invalid object.");
+    var invalid = new Validity(name, checks, false, "Invalid object.");
     callback(invalid);
     return invalid;
   }
@@ -514,7 +498,7 @@ Validation.validateObject = function(name, obj, checks, message, options, callba
     args.unshift(obj[prop]);
     args.unshift(prop);
 
-    validityMap[prop] = Validation.validateOne.apply(Validation, args);
+    validityMap[prop] = validateOne.apply(Validation, args);
   }
 
   var __setMessage = function(valid, message) {
@@ -524,7 +508,7 @@ Validation.validateObject = function(name, obj, checks, message, options, callba
     valid.setMessage(message);
   };
 
-  var valid = new Validation.Validity({
+  var valid = new Validity({
     name: name,
     input: obj,
     validityMap: validityMap
@@ -562,7 +546,7 @@ Validation.validateObject = function(name, obj, checks, message, options, callba
 /**
  * Validates an array of values, using the given validation function.
  *
- * Example usage: Validation.validateArray("myArray", ['apple', 'banana', 123], ["isString", {default: 'fruit'}]);
+ * Example usage: validateArray("myArray", ['apple', 'banana', 123], ["isString", {default: 'fruit'}]);
  *
  * @param {string} name
  * @param {Array} array				 					The array to validate.
@@ -572,7 +556,7 @@ Validation.validateObject = function(name, obj, checks, message, options, callba
  * @param {string} [options.itemType='Item']			[optional] What to call an item.
  * @param {function} [callback]		 					[optional] Callback instead of direct error messages. Callback is called with a Validity object as argument.
  */
-Validation.validateArray = function(name, array, itemValidation, message, options, callback) {
+const validateArray = function(name, array, itemValidation, message, options, callback) {
   if(_.isArray(name)) {
     callback = options;
     options = message;
@@ -589,17 +573,17 @@ Validation.validateArray = function(name, array, itemValidation, message, option
   var maxLength = _.get(options, 'maxLength');
   var itemType = _.get(options, 'itemType');
 
-  callback = Validation.ensure(callback, _.isFunction, function() {});
+  callback = ensure(callback, _.isFunction, function() {});
 
   if(!_.isArray(array)) {
-    var invalid = new Validation.Validity({name: name, input: array, valid: false, message: "Must be an array", type: 'array'});
+    var invalid = new Validity({name: name, input: array, valid: false, message: "Must be an array", type: 'array'});
     callback(invalid);
     return invalid;
   }
   if(!_.isArray(itemValidation)) {
     itemValidation = [itemValidation];
   }
-  var valid = new Validation.Validity(name, array, true);
+  var valid = new Validity(name, array, true);
 
   if(!_.isNumber(minLength)) minLength = 0;
   if(!_.isNumber(maxLength)) maxLength = Infinity;
@@ -608,7 +592,7 @@ Validation.validateArray = function(name, array, itemValidation, message, option
   var itemPlural = String.plural(itemType);
 
   if(array.length < minLength) {
-    var invalid2 = new Validation.Validity({
+    var invalid2 = new Validity({
       name: name,
       input: array,
       valid: false,
@@ -619,7 +603,7 @@ Validation.validateArray = function(name, array, itemValidation, message, option
     return invalid2;
   }
   if(array.length > maxLength) {
-    var invalid3 = new Validation.Validity({
+    var invalid3 = new Validity({
       name: name,
       input: array,
       valid: false,
@@ -641,11 +625,11 @@ Validation.validateArray = function(name, array, itemValidation, message, option
     validationArgs = _.clone(itemValidation);
     validationArgs.unshift(item);
     validationArgs.unshift(itemName);
-    if(Validation.def(message)) {
+    if(def(message)) {
       validationArgs.push(message);
     }
 
-    validityMap[i] = Validation.validateOne.apply(Validation, validationArgs);
+    validityMap[i] = validateOne.apply(Validation, validationArgs);
   }
 
   var corrected = undefined;
@@ -682,7 +666,7 @@ Validation.validateArray = function(name, array, itemValidation, message, option
  *
  * Validates a value, based on the given parameters
  *
- * Example usage: Validation.validateOne("myVariable", "apple", "isString", "Must be a string", {default: "banana", warn: false});
+ * Example usage: validateOne("myVariable", "apple", "isString", "Must be a string", {default: "banana", warn: false});
  *
  * @param {string} name					    The name of the variable to check.
  * @param value							        The value of the variable to check.
@@ -695,8 +679,8 @@ Validation.validateArray = function(name, array, itemValidation, message, option
  * @throws Err
  * @return {boolean}
  */
-Validation.assertOne = function(name, value, method, message, options) {
-  let valid = Validation.validateOne(name, value, method, message, options);
+const assertOne = function(name, value, method, message, options) {
+  let valid = validateOne(name, value, method, message, options);
   if(!valid.isValid()) {
     throw valid.createError();
   }
@@ -713,8 +697,8 @@ Validation.assertOne = function(name, value, method, message, options) {
  * @throws Err
  * @return {boolean}
  */
-Validation.assert = function(value, specifications, message) {
-  let valid = Validation.validate(value, specifications, message);
+const assert = function(value, specifications, message) {
+  let valid = validate(value, specifications, message);
   if(!valid.isValid()) {
     throw new Err(message, valid.createError());
   }
@@ -729,31 +713,30 @@ Validation.assert = function(value, specifications, message) {
  *								  that requires a single argument to check if that is an instance of the given class.
  * @returns {*}
  */
-Validation.instanceof = function(checkClass, arg) {
+const instanceOf = function(checkClass, arg) {
   if(arguments.length < 2) {
     return function(futureArg) {
-      return Validation.instanceof(checkClass, futureArg);
+      return instanceOf(checkClass, futureArg);
     }
   } else {
     return _.isObject(checkClass) && arg instanceof checkClass;
   }
 };
-Validation.instanceOf = Validation.instanceof;
 
 /**
  * Checks whether the given argument is defined, and not null.
  * @param v
  * @returns {boolean}
  */
-Validation.def = function (v) {
+const def = function (v) {
   return ((v !== null) && (v !== undefined));
 };
 
-Validation.ensure = function (variable, evalFunc, defaultValue, message) {
+const ensure = function (variable, evalFunc, defaultValue, message) {
   var sure = variable;
   if (!evalFunc(variable)) {
     sure = defaultValue;
-    if (Validation.def(message)) {
+    if (def(message)) {
       Log.error("Validation::ensure", message, variable);
     }
   }
@@ -761,13 +744,13 @@ Validation.ensure = function (variable, evalFunc, defaultValue, message) {
   return sure;
 };
 
-Validation.ensurePath = function(variable, path, evalFunc, defaultValue, message) {
+const ensurePath = function(variable, path, evalFunc, defaultValue, message) {
   if(!_.isObject(variable)) {
     variable = {};
   }
   if(_.isArray(path)) {
     _.forEach(path, function(p) {
-      variable = Validation.ensurePath(variable, p, evalFunc, defaultValue, p + ": " + message);
+      variable = ensurePath(variable, p, evalFunc, defaultValue, p + ": " + message);
     });
     return variable;
   }
@@ -775,18 +758,35 @@ Validation.ensurePath = function(variable, path, evalFunc, defaultValue, message
   var check = _.get(variable, path);
   if (!evalFunc(check)) {
     _.set(variable, path, defaultValue);
-    if (Validation.def(message)) {
-      Validation.Log.error(message, variable);
+    if (def(message)) {
+      Log.error(message, variable);
     }
   }
 
   return variable;
 };
 
-Validation.isStringOrNumber = function(variable) {
+const isStringOrNumber = function(variable) {
   return !isNaN(parseFloat(variable)) || _.isString(variable);
 };
 
+const Validation = {
+  _validationMethods: {
+    isStringOrNumber: {func: isStringOrNumber, message: "Must be string or number."}
+  },
+  setValidationMethod: function(name, func, message) {
+    if(!_.isFunction(func)) {
+      Log.error("Function given for validation method '" + name + "' is not a function.");
+      return false;
+    }
+
+    Validation._validationMethods[name] = {
+      func: func,
+      message: message
+    };
+  }
+};
+// Populate validation methods with lodash validations
 _.forEach({
   isArguments: "Must be arguments.",
   isArray: "Must be array.",
@@ -812,11 +812,20 @@ _.forEach({
   // Lodash validation methods
   Validation.setValidationMethod(key, _[key], message);
 });
-_.forEach({
-  // Utils validation methods
-  isStringOrNumber: "Must be string or number."
-}, function(message, key) {
-  Validation.setValidationMethod(key, Validation[key], message);
-});
 
-export default Validation;
+export {
+  Validity,
+  isStringOrNumber,
+  isLogger,
+  ensure,
+  ensurePath,
+  def,
+  instanceOf,
+  validate,
+  validateOne,
+  validateArray,
+  validateObject,
+  assert,
+  assertOne
+}
+
