@@ -1,5 +1,4 @@
-
-var _ = require('lodash');
+const _ = require('lodash');
 
 /**
  * @param {object|string} specs		Error message or specs.

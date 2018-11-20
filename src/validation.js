@@ -1,7 +1,7 @@
-import _ from 'lodash';
-import String from './string';
-import Err from './error';
-import Log from './log';
+const _ = require('lodash');
+const String = require('./string');
+const Err = require('./error');
+const Log = require('./log');
 
 const Validity = function (name, input, valid, message) {
   if(arguments.length === 1 && _.isObject(name)) {

@@ -1,9 +1,9 @@
-var $ = require('jquery');
-var _ = require('lodash');
-var Validation = require('./validation');
-var Err = require('./error');
+const $ = require('jquery');
+const _ = require('lodash');
+const Validation = require('./validation');
+const Err = require('./error');
 
-var Execution = {};
+const Execution = {};
 
 Execution.Deferred = $.Deferred;
 
