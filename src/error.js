@@ -6,14 +6,14 @@ var _ = require('lodash');
  * @param {Error} [originalError]	Original error message (only if first argument was string).
  * @constructor
  */
-const BetterError = function(specs, originalError) {
+const Err = function(specs, originalError) {
   Error.call(this);
 
   if(_.isString(specs)) {
     specs = {
       message: specs
     };
-    if(originalError instanceof BetterError) {
+    if(originalError instanceof Err) {
       specs.originalError = originalError;
       if(specs.code === undefined && this.originalError) {
         specs.code = this.originalError.code;
@@ -29,24 +29,24 @@ const BetterError = function(specs, originalError) {
   this.data		   	= specs.data;
   this.public			= specs.public || true;
 };
-BetterError.prototype = Object.create(Error.prototype);
+Err.prototype = Object.create(Error.prototype);
 
-BetterError.prototype.message = 'An Error occurred.';
-BetterError.prototype.originalError = undefined;
-BetterError.prototype.errorMap = undefined;
-BetterError.prototype.code = undefined;
-BetterError.prototype.data = undefined;
-BetterError.prototype.stack = undefined;
+Err.prototype.message = 'An Error occurred.';
+Err.prototype.originalError = undefined;
+Err.prototype.errorMap = undefined;
+Err.prototype.code = undefined;
+Err.prototype.data = undefined;
+Err.prototype.stack = undefined;
 
-BetterError.prototype.toString = function() {
+Err.prototype.toString = function() {
   return this.message;
 };
-BetterError.prototype.getMessage = function() {
+Err.prototype.getMessage = function() {
   return this.message;
 };
 
-BetterError.prototype.getDeepestError = function() {
-  if(this.originalError instanceof BetterError) {
+Err.prototype.getDeepestError = function() {
+  if(this.originalError instanceof Err) {
     return this.originalError.getDeepestError();
   }
   if(_.isObject(this.errorMap)) {
@@ -59,16 +59,16 @@ BetterError.prototype.getDeepestError = function() {
   return this;
 };
 
-BetterError.prototype.export = function() {
+Err.prototype.export = function() {
   let errorMap = {};
   _.forEach(errorMap, (value, key) => {
-    if(value instanceof BetterError) {
+    if(value instanceof Err) {
       errorMap[key] = value.export();
       return;
     }
     errorMap[key] = value;
   });
-  let originalExport = this.originalError instanceof BetterError ? this.originalError.export() : undefined;
+  let originalExport = this.originalError instanceof Err ? this.originalError.export() : undefined;
   return {
     message: this.message,
     code: this.code,
@@ -78,4 +78,4 @@ BetterError.prototype.export = function() {
   }
 };
 
-export default { Error: BetterError }
+module.exports = Err;

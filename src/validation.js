@@ -813,19 +813,4 @@ _.forEach({
   Validation.setValidationMethod(key, _[key], message);
 });
 
-export {
-  Validity,
-  isStringOrNumber,
-  isLogger,
-  ensure,
-  ensurePath,
-  def,
-  instanceOf,
-  validate,
-  validateOne,
-  validateArray,
-  validateObject,
-  assert,
-  assertOne
-}
-
+module.exports = Validation;
