@@ -670,7 +670,6 @@ Validation.validateArray = function(name, array, itemValidation, message, option
  *
  * Example usage: Validation.validateOne("myVariable", "apple", "isString", "Must be a string", {default: "banana", warn: false});
  *
- * @param {string} name					    The name of the variable to check.
  * @param value							        The value of the variable to check.
  * @param method	                  Boolean check for validity, or name of util for validation.
  * @param {string} [message]				[Optional] The message to display when variable is not valid.
@@ -681,8 +680,8 @@ Validation.validateArray = function(name, array, itemValidation, message, option
  * @throws Err
  * @return {boolean}
  */
-Validation.assertOne = function(name, value, method, message, options) {
-  let valid = Validation.validateOne(name, value, method, message, options);
+Validation.assertOne = function(value, method, message, options) {
+  let valid = Validation.validateOne("Asserted value", value, method, message, options);
   if(!valid.isValid()) {
     throw valid.createError();
   }
