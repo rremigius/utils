@@ -14,9 +14,12 @@ const Err = function(specs, originalError) {
     };
     if(originalError instanceof Err) {
       specs.originalError = originalError;
-      if(specs.code === undefined && this.originalError) {
-        specs.code = this.originalError.code;
-      }
+    }
+    if(originalError instanceof Error) {
+      specs.originalError = new Err(originalError);
+    }
+    if(specs.code === undefined && specs.originalError) {
+      specs.code = specs.originalError.code;
     }
   }
   specs = specs || {};
