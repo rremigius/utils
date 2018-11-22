@@ -176,4 +176,4 @@ Str.valueToString = function(value, maxLength) {
   return Str.truncateString(""+value, maxLength);
 };
 
-module.exports = String;
+module.exports = Str;

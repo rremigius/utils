@@ -690,18 +690,24 @@ Validation.assertOne = function(value, method, message, options) {
 };
 
 /**
- * Sort form of validate. Throws an exception with error information when validation fails.
- * @param value           The value to validate.
- * @param specifications  The validation specification object.
- * @param message         An error message to pass with the thrown exception.
+ * Validates a set of values, based on the given parameters.
  *
- * @throws Err
- * @return {boolean}
+ * Example usage: Validation.validate("myValidation", {a: ["apple", "isString"]}, "Validation failed.");
+ *
+ * @param {string} name			 The name by which to identify this validation.
+ * @param {object} checks		 An object of checks. Where the keys are the names of the variables and the
+ *								  values arrays of parameters that are passed to {@link Validation.validateOne}, prepended by
+ *								  <me> and <checks>.
+ * @param {string} [consequence]	[optional] A message to be given if validation fails.
+ * @param {function} [callback]	 [optional] Callback instead of direct error messages. Callback is called with a Validity object as argument.
+ *
+ * @throw Error
+ * @returns boolean
  */
-Validation.assert = function(value, specifications, message) {
-  let valid = Validation.validate(value, specifications, message);
+Validation.assert = function(name, checks, consequence) {
+  let valid = Validation.validate(name, checks, consequence);
   if(!valid.isValid()) {
-    throw new Err(message, valid.createError());
+    throw new Err(consequence, valid.createError());
   }
 
   return true;
