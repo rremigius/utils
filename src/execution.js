@@ -1,6 +1,6 @@
 const $ = require('jquery');
 const _ = require('lodash');
-const Validation = require('./validation');
+const { validate, def } = require('./validation');
 const Err = require('./error');
 
 const Execution = {};
@@ -16,10 +16,10 @@ Execution.isPromise = function(value) {
   if(!_.isObject(value)) {
     return false;
   }
-  if (typeof value.done !== "function") {
+  if (typeof value.then !== "function") {
     return false;
   }
-  if (typeof value.fail !== "function") {
+  if (typeof value.catch !== "function") {
     return false;
   }
 
@@ -42,14 +42,14 @@ Execution.promise = function(value, failWhen) {
 
   var deferred = new Execution.Deferred();
   if(Execution.isPromise(value)) {
-    value.done(function(result) {
+    value.then(function(result) {
       if(failWhen(result)) {
         deferred.reject(result);
       } else {
         deferred.resolve(result);
       }
     });
-    value.fail(function(result) {
+    value.catch(function(result) {
       deferred.reject(result);
     });
     return value;
@@ -72,9 +72,9 @@ Execution.promise = function(value, failWhen) {
  */
 Execution.waitForAll = function(deferredMap, timeout) {
   var deferred = new Execution.Deferred();
-  var check = Validation.validate({
+  var check = validate({
     deferredMap  : [deferredMap, 'isObject'],
-    timeout	  : [timeout, 'isNumber', {default: 60000, warn: Validation.def(timeout)}]
+    timeout	  : [timeout, 'isNumber', {default: 60000, warn: def(timeout)}]
   });
   if(!check.isValid()) {
     deferred.reject(new Err({message: "Could not wait for deferred. Invalid arguments.", data: {}, errorMap: {}}));
@@ -144,7 +144,7 @@ Execution.waitForAll = function(deferredMap, timeout) {
       status: 'pending',
       data: undefined
     };
-    valid.deferredMap[i].done(function(result) {
+    valid.deferredMap[i].then(function(result) {
       if(!timedOut) {
         state[i].status = 'resolved';
         state[i].data = result;
@@ -152,7 +152,7 @@ Execution.waitForAll = function(deferredMap, timeout) {
         __checkState();
       }
     });
-    valid.deferredMap[i].fail(function(result) {
+    valid.deferredMap[i].catch(function(result) {
       if(!timedOut) {
         state[i].status = 'rejected';
         state[i].data = result;
@@ -163,6 +163,17 @@ Execution.waitForAll = function(deferredMap, timeout) {
   });
 
   return deferred.promise();
+};
+
+/**
+ * Same as waitForAll, but returns a Promise instead of a Deferred.
+ * @param promises
+ * @param timeout
+ */
+Execution.awaitAll = function(promises, timeout) {
+  return new Promise((resolve, reject) => {
+    Execution.waitForAll(promises, timeout).then(resolve).catch(reject);
+  });
 };
 
 Execution.synchronize = function(steps) {
@@ -192,10 +203,10 @@ Execution.synchronize = function(steps) {
     }
 
     Execution.promise(step(previousResult), function(val) { return val instanceof Err; })
-      .done(function(result) {
+      .then(function(result) {
         next(i+1, result)
       })
-      .fail(function(err) {
+      .catch(function(err) {
         deferred.reject(err);
       });
   };
