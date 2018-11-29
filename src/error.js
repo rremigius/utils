@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const { isObject, forEach, isNumber, isString } = require('lodash');
 
 /**
  * @param {object|string} specs		Error message or specs.
@@ -12,24 +12,31 @@ const Err = function(specs, originalError) {
     specs = {
       message: specs
     };
-    if(originalError instanceof Err) {
-      specs.originalError = originalError;
-    }
-    if(originalError instanceof Error) {
-      specs.originalError = new Err(originalError);
-    }
-    if(specs.code === undefined && specs.originalError) {
-      specs.code = specs.originalError.code;
-    }
   }
   specs = specs || {};
 
-  this.message		= specs.message;
+  if(originalError instanceof Err) {
+      specs.originalError = originalError;
+  }
+  // Convert native Error to Err
+  if(originalError instanceof Error) {
+      specs.originalError = new Err(originalError);
+  }
+  // Propagate error code
+  if(specs.code === undefined && specs.originalError) {
+	  specs.code = specs.originalError.code;
+  }
+  // Second argument was the error code
+  if(isNumber(originalError) || isString(originalError)) {
+    specs.code = originalError;
+  }
+
+  this.message		  = specs.message;
   this.originalError  = specs.originalError;
-  this.errorMap	   	= specs.errorMap;
-  this.code		   	= specs.code;
-  this.data		   	= specs.data;
-  this.public			= specs.public || true;
+  this.errorMap	   	  = specs.errorMap;
+  this.code		   	  = specs.code;
+  this.data		   	  = specs.data;
+  this.public		  = specs.public || true;
 };
 Err.prototype = Object.create(Error.prototype);
 
@@ -51,9 +58,9 @@ Err.prototype.getDeepestError = function() {
   if(this.originalError instanceof Err) {
     return this.originalError.getDeepestError();
   }
-  if(_.isObject(this.errorMap)) {
+  if(isObject(this.errorMap)) {
     let errorKeys = Object.keys(this.errorMap);
-    if(_.isObject(this.errorMap) && errorKeys.length > 0) {
+    if(isObject(this.errorMap) && errorKeys.length > 0) {
       return this.errorMap[errorKeys[0]].getDeepestError();
     }
   }
@@ -63,7 +70,7 @@ Err.prototype.getDeepestError = function() {
 
 Err.prototype.export = function() {
   let errorMap = {};
-  _.forEach(errorMap, (value, key) => {
+  forEach(errorMap, (value, key) => {
     if(value instanceof Err) {
       errorMap[key] = value.export();
       return;
