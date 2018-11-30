@@ -6,12 +6,12 @@ QUnit.module("Validation");
 
 QUnit.test("Utils.instanceof checks whether the given argument is an instanceof the given class.", function(assert) {
     var Bar = function(){};
-    assert.ok(Utils.instanceof(Bar, new Bar()));
+    assert.ok(Utils.instanceOf(Bar, new Bar()));
 });
 
 QUnit.test("Utils.instanceof with one argument returns a single-argument function that checks whether the argument is an instance of the previously given class.", function(assert) {
     var Bar = function() {};
-    var func = Utils.instanceof(Bar);
+    var func = Utils.instanceOf(Bar);
     assert.ok(func(new Bar()));
 });
 
@@ -229,7 +229,7 @@ QUnit.test("Utils.validateObject validates each specified key-value pair in an o
     };
     var valid1 = Utils.validateObject("x", obj, {
         abc: 'isNumber',
-        bar: [Utils.instanceof(Bar), "BarMessage"]
+        bar: [Utils.instanceOf(Bar), "BarMessage"]
     });
     var valid2 = Utils.validateObject("y", obj, {
         abc: 'isString'
@@ -287,7 +287,7 @@ QUnit.test("Utils.validateArray validates each item in an array.", function(asse
     var Bar = function(){};
     var x = new Bar(), y = new Bar();
     var arr2 = [x, y];
-    var valid2 = Utils.validateArray('arr2', arr2, [Utils.instanceof(Bar), "Arr2Message"]);
+    var valid2 = Utils.validateArray('arr2', arr2, [Utils.instanceOf(Bar), "Arr2Message"]);
     var invalid2 = Utils.validateArray('arr2', arr2, 'isString');
 
     var arr3 = [1, 'a', 3];
