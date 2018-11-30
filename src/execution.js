@@ -18,7 +18,6 @@ class DeferredPromise extends Promise {
 	}
 }
 
-
 /**
  * Tests whether the object is a Promise object (with done and fail methods).
  * @param value
@@ -200,7 +199,7 @@ Execution.synchronize = function (steps) {
 	return new DeferredPromise((resolve, reject) => {
 		const next = function (i, previousResult) {
 			if (i > keys.length - 1) {
-				resolve();
+				resolve(previousResult);
 				return;
 			}
 
