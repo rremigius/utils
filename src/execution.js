@@ -12,14 +12,14 @@ const Execution = {};
 const DeferredPromise = function(executor) {
   this._promise = new Promise(executor);
 };
-Err.prototype.then = function(handler) {
+DeferredPromise.prototype.then = function(handler) {
   this._promise.then(handler);
 };
-Err.prototype.done = Err.prototype.then;
-Err.prototype.catch = function(handler) {
+DeferredPromise.prototype.done = DeferredPromise.prototype.then;
+DeferredPromise.prototype.catch = function(handler) {
   this._promise.catch(handler);
 };
-Err.prototype.fail = Err.prototype.catch;
+DeferredPromise.prototype.fail = DeferredPromise.prototype.catch;
 
 /**
  * Tests whether the object is a Promise object (with done and fail methods).
