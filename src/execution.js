@@ -5,16 +5,20 @@ const Err = require('./error');
 const Execution = {};
 
 /**
- * Custom Promise subclass with `done` and `fail` as aliases of `then` and `catch`, respectively.
- * @param {function} handler  Function (resolve, catch) => { ... }
+ * Thenable using Promise, but with the `done` and `fail` methods from Deferred.
+ * @param {function} executor   Function (resolve, catch) => { ... }
  * @constructor
  */
-const DeferredPromise = function(handler) {
-  Promise.call(this, handler);
+const DeferredPromise = function(executor) {
+  this._promise = new Promise(executor);
 };
-Err.prototype = Object.create(Promise.prototype);
-Err.prototype.constructor = Promise;
+Err.prototype.then = function(handler) {
+  this._promise.then(handler);
+};
 Err.prototype.done = Err.prototype.then;
+Err.prototype.catch = function(handler) {
+  this._promise.catch(handler);
+};
 Err.prototype.fail = Err.prototype.catch;
 
 /**
