@@ -4,19 +4,18 @@ const Err = require('./error');
 
 const Execution = {};
 
-class DeferredPromise extends Promise {
-	constructor(...args) {
-		super(...args);
-	}
-
-	done(...args) {
-		return this.then(...args);
-	}
-
-	fail(...args) {
-		return this.catch(...args);
-	}
-}
+/**
+ * Custom Promise subclass with `done` and `fail` as aliases of `then` and `catch`, respectively.
+ * @param {function} handler  Function (resolve, catch) => { ... }
+ * @constructor
+ */
+const DeferredPromise = function(handler) {
+  Promise.call(this, handler);
+};
+Err.prototype = Object.create(Promise.prototype);
+Err.prototype.constructor = Promise;
+Err.prototype.done = Err.prototype.then;
+Err.prototype.fail = Err.prototype.catch;
 
 /**
  * Tests whether the object is a Promise object (with done and fail methods).
