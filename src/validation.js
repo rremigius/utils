@@ -452,7 +452,8 @@ Validation.Validity.createValidValidity = function(name) {
 	 */
 	Validation.validateObject = function(name, obj, checks, message, options, callback) {
 		if(_.isObject(name)) {
-			callback = message;
+			callback = options;
+			options = message;
 			message = checks;
 			checks = obj;
 			obj = name;
