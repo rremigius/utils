@@ -123,7 +123,7 @@ Execution.waitForAll = function (promises, timeout) {
 		// Set Timeout
 		let timedOut = false;
 		let state = {};
-		let results = {};
+		let results = _.isArray(promises) ? [] : {};
 		let errors = {};
 		let _timeout = setTimeout(function () {
 			timedOut = true;
