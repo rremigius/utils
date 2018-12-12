@@ -136,4 +136,4 @@ Log.Level = {
 Log._instance = null;
 Log._instances = {};
 
-export default Log;
+module.exports = Log;
