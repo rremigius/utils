@@ -33,6 +33,8 @@ const Err = function(specs, originalError) {
   this.public = specs.public || true;
   this.errorMap = specs.errorMap;
   this.originalError = specs.originalError;
+
+  this.stack = (new Error()).stack;
 };
 // Inherit
 Err.prototype = Object.create(Error.prototype);
