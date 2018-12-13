@@ -14,10 +14,12 @@ const DeferredPromise = function(executor) {
 };
 DeferredPromise.prototype.then = function(handler) {
   this._promise.then(handler);
+  return this;
 };
 DeferredPromise.prototype.done = DeferredPromise.prototype.then;
 DeferredPromise.prototype.catch = function(handler) {
   this._promise.catch(handler);
+  return this;
 };
 DeferredPromise.prototype.fail = DeferredPromise.prototype.catch;
 

@@ -715,68 +715,85 @@ Validation.assert = function(name, checks, consequence) {
 };
 
 /**
-	 * Checks whether the given argument is an instance of the given class.
-	 * @param {function} checkClass	 The class the second argument should be an instance of.
-	 * @param {object} [arg]			The argument to check. If not provided, the function will return a function
-	 *								  that requires a single argument to check if that is an instance of the given class.
-	 * @returns {*}
-	 */
+ * Checks whether the given argument is an instance of the given class.
+ * @param {function} checkClass	 	The class the second argument should be an instance of.
+ * @param {object} [arg]			The argument to check. If not provided, the function will return a function
+ *								  that requires a single argument to check if that is an instance of the given class.
+ * @returns {*}
+ */
 Validation.instanceOf = function(checkClass, arg) {
-		if(arguments.length < 2) {
-			return function(futureArg) {
+	if(arguments.length < 2) {
+		return function(futureArg) {
 			return Validation.instanceOf(checkClass, futureArg);
-			}
-		} else {
-			return _.isObject(checkClass) && arg instanceof checkClass;
 		}
-	};
+	} else {
+		return _.isObject(checkClass) && arg instanceof checkClass;
+	}
+};
 
-	/**
-	 * Checks whether the given argument is defined, and not null.
-	 * @param v
-	 * @returns {boolean}
-	 */
-	Validation.def = function (v) {
-		return ((v !== null) && (v !== undefined));
-	};
+/**
+ * Checks whether the given argument is defined, and not null.
+ * @param v
+ * @returns {boolean}
+ */
+Validation.def = function (v) {
+	return ((v !== null) && (v !== undefined));
+};
 
-	Validation.ensure = function (variable, evalFunc, defaultValue, message) {
-		var sure = variable;
-		if (!evalFunc(variable)) {
-			sure = defaultValue;
-			if (Validation.def(message)) {
-				Log.error("Validation::ensure", message, variable);
-			}
+/**
+ * Checks whether the two given values are equal.
+ * @param value1	Value to check for equality against the second value.
+ * @param value2	Second value to check for equality against the first value. If not provided, the function will
+ * 					return a function that requires a single argument to check if that argument equals the first value.
+ * @return {*}
+ */
+Validation.equals = function(value1, value2) {
+	if(arguments.length < 2) {
+		return function(futureArg) {
+			return Validation.equals(value1, futureArg);
 		}
+	} else {
+		return value1 === value2;
+	}
+};
 
-		return sure;
-	};
-
-	Validation.ensurePath = function(variable, path, evalFunc, defaultValue, message) {
-		if(!_.isObject(variable)) {
-			variable = {};
+Validation.ensure = function (variable, evalFunc, defaultValue, message) {
+	var sure = variable;
+	if (!evalFunc(variable)) {
+		sure = defaultValue;
+		if (Validation.def(message)) {
+			Log.error("Validation::ensure", message, variable);
 		}
-		if(_.isArray(path)) {
-			_.forEach(path, function(p) {
-				variable = Validation.ensurePath(variable, p, evalFunc, defaultValue, p + ": " + message);
-			});
-			return variable;
-		}
+	}
 
-		var check = _.get(variable, path);
-		if (!evalFunc(check)) {
-			_.set(variable, path, defaultValue);
-			if (Validation.def(message)) {
-				Validation.Log.error(message, variable);
-			}
-		}
+	return sure;
+};
 
+Validation.ensurePath = function(variable, path, evalFunc, defaultValue, message) {
+	if(!_.isObject(variable)) {
+		variable = {};
+	}
+	if(_.isArray(path)) {
+		_.forEach(path, function(p) {
+			variable = Validation.ensurePath(variable, p, evalFunc, defaultValue, p + ": " + message);
+		});
 		return variable;
-	};
+	}
 
-	Validation.isStringOrNumber = function(variable) {
-		return !isNaN(parseFloat(variable)) || _.isString(variable);
-	};
+	var check = _.get(variable, path);
+	if (!evalFunc(check)) {
+		_.set(variable, path, defaultValue);
+		if (Validation.def(message)) {
+			Validation.Log.error(message, variable);
+		}
+	}
+
+	return variable;
+};
+
+Validation.isStringOrNumber = function(variable) {
+	return !isNaN(parseFloat(variable)) || _.isString(variable);
+};
 
 Validation._validationMethods = {
   isStringOrNumber: {func: Validation.isStringOrNumber, message: "Must be string or number."}

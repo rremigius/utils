@@ -34,7 +34,7 @@ const Err = function(specs, originalError) {
   this.errorMap = specs.errorMap;
   this.originalError = specs.originalError;
 
-  this.stack = (new Error()).stack;
+  this.stack = originalError ? originalError.stack : (new Error()).stack;
 };
 // Inherit
 Err.prototype = Object.create(Error.prototype);
