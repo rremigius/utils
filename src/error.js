@@ -1,6 +1,6 @@
 'use strict';
 
-const {isObject, forEach, isNumber, isString} = require('lodash');
+const {isObject, forEach, isNumber, isString, get} = require('lodash');
 
 const Err = function(specs, originalError) {
   if (isString(specs)) {
@@ -34,7 +34,7 @@ const Err = function(specs, originalError) {
   this.errorMap = specs.errorMap;
   this.originalError = specs.originalError;
 
-  this.stack = originalError ? originalError.stack : (new Error()).stack;
+  this.stack = get(originalError, 'stack') || (new Error()).stack;
 };
 // Inherit
 Err.prototype = Object.create(Error.prototype);
