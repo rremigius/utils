@@ -119,7 +119,7 @@ Log.prototype._log = function(method, level, args) {
   }
 };
 Log.prototype._addName = function(args) {
-  [].unshift.apply(args, [this.name, ":"]);
+  [].unshift.apply(args, ['[ ' + this.name + ' ]']);
 
   return args;
 };
