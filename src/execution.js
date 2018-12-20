@@ -22,6 +22,7 @@ DeferredPromise.prototype.catch = function(handler) {
   return this;
 };
 DeferredPromise.prototype.fail = DeferredPromise.prototype.catch;
+Execution.DeferredPromise = DeferredPromise;
 
 /**
  * Tests whether the object is a Promise object (with done and fail methods).
