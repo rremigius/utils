@@ -201,6 +201,33 @@ Execution.awaitAll = function (promises, timeout) {
 	return Execution.waitForAll(promises, timeout);
 };
 
+/**
+ * Poll for a given check function to return true.
+ * @param {function} check    The check function.
+ * @param {number} interval   The interval in milliseconds to check.
+ * @param {number} timeout    The number of milliseconds after which to stop polling and reject the promise.
+ * @return {DeferredPromise}
+ */
+Execution.poll = function(check, interval, timeout = undefined) {
+  return new DeferredPromise((resolve, reject) => {
+    // Set interval to keep checking
+    let intervalID = setInterval(() => {
+      if(check()) {
+        resolve();
+        clearInterval(intervalID);
+      }
+    }, interval);
+
+    // Clear also after timeout
+    if(timeout) {
+      setTimeout(() => {
+        reject(new Err("Polling timed out."));
+        clearInterval(intervalID)
+      }, timeout);
+    }
+  });
+};
+
 Execution.synchronize = function (steps) {
 	return new DeferredPromise((resolve, reject) => {
 		const next = function (i, previousResult) {

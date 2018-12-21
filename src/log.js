@@ -4,8 +4,10 @@ const Log = function(name, driver) {
   this.name = name || '';
   this._level = undefined;
 
-  this._driver = driver || console;
+  this._driver = driver;
 };
+
+Log.nativeLog = console;
 
 /**
  * Creates a Log instance with the given name. If an instance was already created before, it will return the existing
@@ -79,7 +81,7 @@ Log.prototype.setDriver = function(driver) {
 Log.prototype.getDriver = function() {
   let LogClass = this.getLogClass();
   if(this.name === Log.getDefaultLogName()) {
-    return this._driver;
+    return this._driver || console;
   }
   return this._driver || LogClass.getDriver();
 };
