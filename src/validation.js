@@ -681,8 +681,8 @@ Validation.Validity.createValidValidity = function(name) {
  * @throws Err
  * @return {boolean}
  */
-Validation.assertOne = function(value, method, message, options) {
-  let valid = Validation.validateOne("Asserted value", value, method, message, options);
+Validation.assertOne = function(name, value, method, message, options) {
+  let valid = Validation.validateOne(name, value, method, message, options);
   if(!valid.isValid()) {
     throw valid.createError();
   }
