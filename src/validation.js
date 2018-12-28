@@ -671,12 +671,13 @@ Validation.Validity.createValidValidity = function(name) {
  *
  * Example usage: Validation.validateOne("myVariable", "apple", "isString", "Must be a string", {default: "banana", warn: false});
  *
- * @param value							        The value of the variable to check.
- * @param method	                  Boolean check for validity, or name of util for validation.
- * @param {string} [message]				[Optional] The message to display when variable is not valid.
- * @param {object} options				  An object of extra option.
- * @param [options.default]				  A default value if given value is invalid. If not provided, validation will fail if invalid value.
- * @param {boolean} [options.warn]	If false, no warning will be given if default is chosen. Defaults to true.
+ * @param {string} name				The name of the assertion.
+ * @param value						The value of the variable to check.
+ * @param method	                Boolean check for validity, or name of util for validation.
+ * @param {string} [message]		The message to display when variable is not valid.
+ * @param {object} [options]		An object of extra option.
+ * @param [options.default]				A default value if given value is invalid. If not provided, validation will fail if invalid value.
+ * @param {boolean} [options.warn]		If false, no warning will be given if default is chosen. Defaults to true.
  *
  * @throws Err
  * @return {boolean}
