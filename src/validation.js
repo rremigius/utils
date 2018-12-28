@@ -124,7 +124,7 @@ Validation.Validity.createValidValidity = function(name) {
 		this._validityMap = map;
 	};
 	Validation.Validity.prototype.createBadValueMessage = function(returnAsArray) {
-		var why = this.getMessage();
+		var why = this.getName() + ": " + this.getMessage();
 		if(why === undefined) {
 			return undefined;
 		}
