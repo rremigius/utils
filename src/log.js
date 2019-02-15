@@ -78,6 +78,9 @@ Log.prototype.setDriver = function(driver) {
   }
   this._driver = driver;
 };
+Log.prototype.resetDriver = function() {
+  this._driver = undefined;
+};
 Log.prototype.getDriver = function() {
   let LogClass = this.getLogClass();
   if(this.name === Log.getDefaultLogName()) {
