@@ -5,27 +5,7 @@ const Err = require('./error');
 const Execution = {};
 
 /**
- * Thenable using Promise, but with the `done` and `fail` methods from Deferred.
- * @param {function} executor   Function (resolve, catch) => { ... }
- * @constructor
- */
-const DeferredPromise = function(executor) {
-  this._promise = new Promise(executor);
-};
-DeferredPromise.prototype.then = function(handler) {
-  this._promise.then(handler);
-  return this;
-};
-DeferredPromise.prototype.done = DeferredPromise.prototype.then;
-DeferredPromise.prototype.catch = function(handler) {
-  this._promise.catch(handler);
-  return this;
-};
-DeferredPromise.prototype.fail = DeferredPromise.prototype.catch;
-Execution.DeferredPromise = DeferredPromise;
-
-/**
- * Tests whether the object is a Promise object (with done and fail methods).
+ * Tests whether the object is a Promise object (with then and catch methods).
  * @param value
  * @returns {boolean}
  */
@@ -62,7 +42,7 @@ Execution.isDeferred = function (value) {
  * @param value                    Value or promise.
  * @param {function} [failWhen] A function to check whether a value is a considered a failure value.
  *                                Should return TRUE if value should cause promise to be rejected.
- * @return {DeferredPromise}    A promise for the result. Can also act as a Deferred object.
+ * @return {Promise}    A promise for the result. Can also act as a Deferred object.
  */
 Execution.promise = function (value, failWhen) {
 	if (Execution.isPromise(value)) {
@@ -76,7 +56,7 @@ Execution.promise = function (value, failWhen) {
 		}; // by default, never reject values
 	}
 
-	return new DeferredPromise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		if (Execution.isDeferred(value)) {
 			value.done(resolve);
 			value.fail(reject);
@@ -97,7 +77,7 @@ Execution.promise = function (value, failWhen) {
  * @returns {DeferredPromise}    Will contain either a map of results, or an Error object.
  */
 Execution.waitForAll = function (promises, timeout) {
-	return new DeferredPromise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		// Validation
 		const check = validate({
 			promises: [promises, 'isObject'],
@@ -206,10 +186,10 @@ Execution.awaitAll = function (promises, timeout) {
  * @param {function} check    The check function.
  * @param {number} interval   The interval in milliseconds to check.
  * @param {number} timeout    The number of milliseconds after which to stop polling and reject the promise.
- * @return {DeferredPromise}
+ * @return {Promise}
  */
 Execution.poll = function(check, interval, timeout = undefined) {
-  return new DeferredPromise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     // Set interval to keep checking
     let intervalID = setInterval(() => {
       if(check()) {
@@ -229,7 +209,7 @@ Execution.poll = function(check, interval, timeout = undefined) {
 };
 
 Execution.synchronize = function (steps) {
-	return new DeferredPromise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		const next = function (i, previousResult) {
 			if (i > keys.length - 1) {
 				resolve(previousResult);
