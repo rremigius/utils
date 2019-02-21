@@ -116,3 +116,65 @@ QUnit.test("Utils.waitForAll rejects with error if timeout is passed.", function
     done();
   });
 });
+
+QUnit.test("Utils.promise returns a promise for both direct values and promises.", function(assert) {
+  var direct1 = Utils.promise('foo');
+  var direct2 = Utils.promise(1);
+  var direct3 = Utils.promise({foo: 'bar'});
+
+  var def1 = Utils.promise(new Promise(()=>{}));
+
+  assert.ok(Utils.isPromise(direct1));
+  assert.ok(Utils.isPromise(direct2));
+  assert.ok(Utils.isPromise(direct3));
+
+  assert.ok(Utils.isPromise(def1));
+});
+
+QUnit.test("Utils.promise resolves when given deferred is resolved.", function(assert) {
+  var done = TestUtils.async(assert, 1000);
+
+  var expect = {foo: 'bar'};
+  var def = new Promise((resolve)=>resolve(expect));
+  var promise = Utils.promise(def);
+  promise.then(function(result) {
+    assert.equal(result, expect);
+    done();
+  });
+});
+
+QUnit.test("Utils.promise fails when given deferred is rejected.", function(assert) {
+  var done = TestUtils.async(assert, 1000);
+
+  var expect = {foo: 'bar'};
+  var def = new Promise((resolve, reject)=>reject(expect));
+  var promise = Utils.promise(def);
+  promise.catch(function(result) {
+    assert.equal(result, expect);
+    done();
+  });
+});
+
+QUnit.test("Utils.promise resolves with direct value.", function(assert) {
+  var done = TestUtils.async(assert, 1000);
+
+  var expect = {foo: 'bar'};
+  var promise = Utils.promise(expect);
+  promise.then(function(result) {
+    assert.equal(result, expect);
+    done();
+  });
+});
+
+QUnit.test("Utils.promise resolves for values that are not specified as failures.", function(assert) {
+  var done = TestUtils.async(assert, 1000);
+
+  var promise = Utils.promise('foo', function(val) {return val !== 'foo';});
+  promise.then(function(result) {
+    assert.equal(result, 'foo');
+    done();
+  });
+  promise.catch(function(err) {
+    TestUtils.error(assert, "Should not fail", result);
+  });
+});
