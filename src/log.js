@@ -24,28 +24,29 @@ Log.prototype.getPath = function() {
   return parentPath.concat(this.name);
 };
 Log.prototype.setDriver = function(driver) {
-  let valid = false;
-  if(isObject(driver)) {
-    // Driver must have all necessary logging methods
-    valid = !find(['error', 'info', 'warn', 'log', 'trace'], method => !isFunction(driver[method]))
-  }
-  if(!valid) {
-    this.warn("Invalid log driver. Falling back to default (console).");
-    return;
-  }
   this._driver = driver;
 };
 Log.prototype.resetDriver = function() {
   this._driver = undefined;
 };
 Log.prototype.getDriver = function() {
-  return this._driver || (this._parent && this._parent.getDriver());
+  if(this._driver !== undefined) {
+    return this._driver;
+  }
+  if(this._parent !== undefined) {
+    return this._parent.getDriver();
+  }
+  return Log.nativeLog;
 };
 Log.prototype.setLevel = function(level) {
   this._level = level;
 };
 Log.prototype.getLevel = function() {
-  return this._level || (this._parent && this._parent.getLevel());
+  if(this._level !== undefined) return this._level;
+  if(this._parent) {
+    return this._parent.getLevel();
+  }
+  return Log.Level.ALL;
 };
 Log.prototype.debug = function() {
   this._log('debug', Log.Level.DEBUG, arguments);
@@ -68,7 +69,14 @@ Log.prototype.trace = function() {
 Log.prototype._log = function(method, level, args) {
   if(level >= this.getLevel()) {
     let driver = this.getDriver();
-    driver[method].apply(driver, this._addName(args));
+    let func = driver[method];
+    if(!isFunction(func)){
+      func = this.getParent().getDriver()[func];
+    }
+    if(!isFunction(func)) {
+      console.error(`Logging method ${func} does not exist.`);
+    }
+    func.apply(driver, this._addName(args));
   }
 };
 Log.prototype._addName = function(args) {
@@ -119,6 +127,9 @@ Log.instance = function(name) {
   this._instances[name] = instance;
 
   return instance;
+};
+Log.resetInstances = function() {
+  Log._instances = {};
 };
 Log.error = function() {
   this.root().error.apply(this.instance(), arguments);
