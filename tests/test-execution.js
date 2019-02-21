@@ -1,4 +1,3 @@
-const $ = require('jquery');
 const Utils = require('../src/execution');
 const TestUtils = require('./qunit-test-utils');
 
@@ -16,24 +15,23 @@ QUnit.test("Utils.synchronize executes several functions in serial and maps the 
 					resolve();
 				}, 100);
 			});
-			return deferred.promise();
 		},
 		'bar': function() {
 			order += 'B';
 			return order;
 		},
 		'deferredFooBar': function(results) {
-			let deferred = new $.Deferred();
-			deferred.resolve(results + 'C');
-			return deferred.promise();
+		  return new Promise((resolve, reject) => {
+		    resolve(results + 'C');
+      });
 		}
 	};
 	Utils.synchronize(steps)
-		.done(function(results) {
+		.then(function(results) {
 			assert.equal(results, 'ABC');
 			done();
 		})
-		.fail(function(err) {
+		.catch(function(err) {
 			console.error(err);
 			assert.ok(false, "Synchronize succeeded.");
 			done();

@@ -1,70 +1,27 @@
-const { isObject, find, isFunction } = require('lodash');
+const { isObject, find, isFunction, isArray, isEmpty } = require('lodash');
 
 const Log = function(name, driver) {
-  this.name = name || '';
+  this.name = name || 'Log';
   this._level = undefined;
-
+  this._parent = undefined;
   this._driver = driver;
 };
-
 Log.nativeLog = console;
 
-/**
- * Creates a Log instance with the given name. If an instance was already created before, it will return the existing
- * instance.
- * @param {string} [name]
- * @return {Log}
- */
-Log.instance = function(name) {
-  let LogClass = this;
-  // The Singleton instance
-  if(!name) {
-    if(!LogClass._instance) {
-      LogClass._instance = new LogClass(LogClass._defaultName);
-      LogClass._instance.setLevel(LogClass.Level.ALL); // default level
-    }
-    return LogClass._instance;
-  }
-
-  // Named instances
-  let log = LogClass._instances[name];
-  if(!log) {
-    log = LogClass._instances[name] = new LogClass(name);
-  }
-  return log;
+Log.prototype.instance = function(name) {
+  let instance = new this.constructor(name);
+  instance.setParent(this);
+  return instance;
 };
-Log.error = function() {
-  this.instance().error.apply(this.instance(), arguments);
+Log.prototype.setParent = function(parentLog) {
+  this._parent = parentLog;
 };
-Log.info = function() {
-  this.instance().info.apply(this.instance(), arguments);
+Log.prototype.getParent = function() {
+  return this._parent;
 };
-Log.warn = function() {
-  this.instance().warn.apply(this.instance(), arguments);
-};
-Log.log = function() {
-  this.instance().log.apply(this.instance(), arguments);
-};
-Log.trace = function() {
-  this.instance().trace.apply(this.instance(), arguments);
-};
-Log.setLevel = function(level) {
-  this.instance().setLevel(level);
-};
-Log.getLevel = function() {
-  return this.instance().getLevel();
-};
-Log.getDefaultLogName = function() {
-  return this._defaultName;
-};
-Log.getDriver = function() {
-  return this.instance().getDriver();
-};
-Log.setDriver = function(driver) {
-  return this.instance().setDriver(driver);
-};
-Log.prototype.getLogClass = function() {
-  return this.constructor;
+Log.prototype.getPath = function() {
+  let parentPath = this._parent && this._parent.getPath();
+  return parentPath.concat(this.name);
 };
 Log.prototype.setDriver = function(driver) {
   let valid = false;
@@ -82,22 +39,13 @@ Log.prototype.resetDriver = function() {
   this._driver = undefined;
 };
 Log.prototype.getDriver = function() {
-  let LogClass = this.getLogClass();
-  if(this.name === Log.getDefaultLogName()) {
-    return this._driver || console;
-  }
-  return this._driver || LogClass.getDriver();
+  return this._driver || (this._parent && this._parent.getDriver());
 };
 Log.prototype.setLevel = function(level) {
   this._level = level;
 };
 Log.prototype.getLevel = function() {
-  let LogClass = this.getLogClass();
-  if(this.name === LogClass.getDefaultLogName()){
-    return this._level;
-  }
-
-  return this._level !== undefined ? this._level : LogClass.getLevel();
+  return this._level || (this._parent && this._parent.getLevel());
 };
 Log.prototype.debug = function() {
   this._log('debug', Log.Level.DEBUG, arguments);
@@ -128,7 +76,77 @@ Log.prototype._addName = function(args) {
 
   return args;
 };
-Log._defaultName = 'Log';
+
+Log.root = function() {
+  let Class = this;
+  if(!Class._root) {
+    Class._root = new Class('Log');
+    Class._root.setLevel(Class.Level.ALL); // default level
+  }
+  return Class._root;
+};
+
+/**
+ * Creates a Log instance with the given name. If an instance was already created before, it will return the existing
+ * instance.
+ * @param {string|Array} [name]
+ * @return {Log}
+ */
+Log.instance = function(name) {
+  if(name in this._instances) {
+    return this._instances[name];
+  }
+  if(isEmpty(name)) {
+    return Log.root();
+  }
+
+  // Split path
+  if(!isArray(name)) {
+    name = name.split('/');
+  }
+  // Clone path
+  let path = name.slice();
+
+  // Get leaf name
+  let leaf = path.pop();
+
+  // Create child from parent
+  let parent = Log.instance(path);
+  let instance = parent.instance(leaf);
+
+  // Store new instance under path name
+  if(isArray(name)) name = name.join('/');
+  this._instances[name] = instance;
+
+  return instance;
+};
+Log.error = function() {
+  this.root().error.apply(this.instance(), arguments);
+};
+Log.info = function() {
+  this.root().info.apply(this.instance(), arguments);
+};
+Log.warn = function() {
+  this.root().warn.apply(this.instance(), arguments);
+};
+Log.log = function() {
+  this.root().log.apply(this.instance(), arguments);
+};
+Log.trace = function() {
+  this.root().trace.apply(this.instance(), arguments);
+};
+Log.setLevel = function(level) {
+  this.root().setLevel(level);
+};
+Log.getLevel = function() {
+  return this.root().getLevel();
+};
+Log.getDriver = function() {
+  return this.root().getDriver();
+};
+Log.setDriver = function(driver) {
+  return this.root().setDriver(driver);
+};
 Log.Level = {
 	ALL: 0,
 	DEBUG: 1,
@@ -138,7 +156,7 @@ Log.Level = {
 	FATAL: 5,
 	OFF: 6
 };
-Log._instance = null;
+Log._root = null;
 Log._instances = {};
 
 module.exports = Log;
