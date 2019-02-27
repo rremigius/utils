@@ -7,3 +7,4 @@ require('./test-string');
 require('./test-validation');
 require('./test-execution');
 require('./test-log');
+require('./test-loading');

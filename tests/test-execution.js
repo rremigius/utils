@@ -178,3 +178,16 @@ QUnit.test("Utils.promise resolves for values that are not specified as failures
     TestUtils.error(assert, "Should not fail", result);
   });
 });
+
+QUnit.test("Utils.promise fails for values that are specified as failures.", function(assert) {
+  var done = TestUtils.async(assert, 1000);
+
+  var promise = Utils.promise('foo', function(val) {return val === 'foo';});
+  promise.then(function(result) {
+    TestUtils.error(assert, "Should not resolve", result);
+  });
+  promise.catch(function(result) {
+    assert.equal(result, 'foo');
+    done();
+  });
+});
