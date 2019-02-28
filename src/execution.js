@@ -74,7 +74,7 @@ Execution.promise = function (value, failWhen) {
  * Waits for all deferred and resolves with an object of their results.
  * @param {object} promises   Object of Deferred objects.
  * @param {int} [timeout]        Maximum time to wait before throwing a timeout error.
- * @returns {DeferredPromise}    Will contain either a map of results, or an Error object.
+ * @returns {Promise}    Will contain either a map of results, or an Error object.
  */
 Execution.waitForAll = function (promises, timeout) {
 	return new Promise((resolve, reject) => {
