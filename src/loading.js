@@ -28,7 +28,7 @@ Loading.prototype.isLoading = function() {
  * @return {Promise<any>}
  */
 Loading.prototype.start = function(name = 'loading', timeout = undefined, promise = undefined) {
-  let loadingPromise = new Promise(async (resolve, reject) => {
+  let loadingPromise = new Promise( (resolve, reject) => {
 
     // Store reject/resolve methods outside of Promise
     this._promises[name] = {
@@ -47,13 +47,7 @@ Loading.prototype.start = function(name = 'loading', timeout = undefined, promis
 
     // Wrap given promise
     if(promise instanceof Promise) {
-      // We use async/await because .then and .catch will throw an 'Uncaught (in Promise)' error.
-      try {
-        let result = await promise;
-        resolve(result);
-      } catch(e) {
-        reject(e);
-      }
+      promise.then(resolve).catch(reject);
     }
   });
   this._promises[name].promise = loadingPromise;
