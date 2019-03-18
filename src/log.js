@@ -5,13 +5,39 @@ const Log = function(name, driver) {
   this._level = undefined;
   this._parent = undefined;
   this._driver = driver;
+  this._instances = {};
 };
 Log.nativeLog = console;
 
 Log.prototype.instance = function(name) {
-  let instance = new this.constructor(name);
-  instance.setParent(this);
-  return instance;
+  if(name in this._instances) {
+    return this._instances[name];
+  }
+  if(isEmpty(name)) {
+    return this;
+  }
+
+  // Split path
+  if(!isArray(name)) {
+    name = name.split('/');
+  }
+  // Clone path
+  let path = name.slice();
+
+  // Get next step name
+  let step = path.shift();
+
+  // Last leaf was popped, create child
+  if(path.length === 0) {
+    let instance = new this.constructor(step);
+    instance.setParent(this);
+    this._instances[name] = instance;
+    return instance;
+  }
+
+  // Not a leaf yet: recursion
+  let child = this.instance(step);
+  return child.instance(path);
 };
 Log.prototype.setParent = function(parentLog) {
   this._parent = parentLog;
@@ -101,35 +127,10 @@ Log.root = function() {
  * @return {Log}
  */
 Log.instance = function(name) {
-  if(name in this._instances) {
-    return this._instances[name];
-  }
-  if(isEmpty(name)) {
-    return Log.root();
-  }
-
-  // Split path
-  if(!isArray(name)) {
-    name = name.split('/');
-  }
-  // Clone path
-  let path = name.slice();
-
-  // Get leaf name
-  let leaf = path.pop();
-
-  // Create child from parent
-  let parent = Log.instance(path);
-  let instance = parent.instance(leaf);
-
-  // Store new instance under path name
-  if(isArray(name)) name = name.join('/');
-  this._instances[name] = instance;
-
-  return instance;
+  return Log.root().instance(name);
 };
 Log.resetInstances = function() {
-  Log._instances = {};
+  Log.root()._instances = {};
 };
 Log.error = function() {
   this.root().error.apply(this.instance(), arguments);

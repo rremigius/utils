@@ -48,13 +48,6 @@ QUnit.test("Log.instance with name argument fetches earlier created instance wit
   assert.equal(log, log2);
 });
 
-QUnit.test("Log.instance with path as name argument creates hierarchy of instances.", function(assert) {
-  Log.instance('foo/bar/qux');
-  assert.ok(Log._instances['foo'] instanceof Log, 'foo set');
-  assert.ok(Log._instances['foo/bar'] instanceof Log, 'foo/bar set');
-  assert.ok(Log._instances['foo/bar/qux'] instanceof Log, 'foo/bar/qux set');
-});
-
 QUnit.test("Log.prototype.log passes arguments to log driver", function(assert) {
   let log = Log.instance("foo");
   log.setDriver({
@@ -63,4 +56,25 @@ QUnit.test("Log.prototype.log passes arguments to log driver", function(assert) 
     },
   });
   log.log(123, 'abc');
+});
+
+QUnit.test("Log.instance with path can return same instance as calling instance on an instance.", function(assert) {
+  let foobar1 = Log.instance("foo/bar");
+  let foobar2 = Log.instance("foo").instance("bar");
+
+  let barfoo1 = Log.instance("bar").instance("foo");
+  let barfoo2 = Log.instance("bar/foo");
+
+  assert.equal(foobar1, foobar2, "instance('foo').instance('bar') and instance('foo/bar') (in that order) return the same.");
+  assert.equal(barfoo1, barfoo2, "instance('bar/foo') and instance('bar').instance('foo') (in that order) return the same.");
+});
+
+QUnit.test("Log.instance with same name but different parent does not return the same.", function(assert) {
+  let foo1 = Log.instance("foo");
+  let foo2 = Log.instance("bar/foo");
+  let foo3 = Log.instance("foo/foo");
+
+  assert.notEqual(foo1, foo2, "Instance foo not equal to bar/foo.");
+  assert.notEqual(foo2, foo3, "Instance bar/foo not equal to foo/foo.");
+  assert.notEqual(foo3, foo1, "Instance foo/foo not equal to foo.");
 });
