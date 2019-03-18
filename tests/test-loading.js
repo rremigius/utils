@@ -48,6 +48,7 @@ QUnit.test("Loading.wait without name argument returns promise that resolves whe
   let loading = new Loading();
   loading.start('foo');
   loading.start('bar');
+
   loading.done('foo', 123);
   loading.done('bar', 321);
 
@@ -120,4 +121,18 @@ QUnit.test("Loading.start first call emits 'start' event.", async function(asser
     alreadyCalled = true;
   });
   loading.start('foo');
+});
+
+QUnit.test("Loading.wait before start should not resolve immediately.", async function(assert) {
+  let loading = new Loading();
+  let started = false;
+  loading.wait()
+    .then(()=>{
+      assert.ok(started, "Loading.wait resolved after start.");
+    });
+
+  loading.start('foo', 100, new Promise(resolve =>
+    setTimeout(()=>resolve())
+  ));
+  started = true;
 });

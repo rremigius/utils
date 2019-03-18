@@ -8,12 +8,21 @@ const Loading = function () {
   this._loadErrors = {};
   this._loaded = {};
   this._promises = {};
-  this._finalPromise = {};
+  this._resetFinalPromise();
 
   this._eventInterface = new EventInterface();
 
   this.on = this._eventInterface.getOnMethod();
   this.fire = this._eventInterface.getFireMethod();
+};
+
+Loading.prototype._resetFinalPromise = function() {
+  let promise = new Promise((resolve, reject) => {
+    this._finalPromise = {resolve, reject};
+  });
+  promise.catch(()=>{}); // we don't care about the final promise here, but we need to catch it anyway
+  this._finalPromise.promise = promise;
+  return promise;
 };
 
 Loading.prototype.isLoading = function() {
@@ -109,14 +118,7 @@ Loading.prototype._firstLoad = function() {
   this._isLoading = true;
   this._emitStart();
 
-  let finalPromise = new Promise((resolve, reject) => {
-    this._finalPromise.resolve = resolve;
-    this._finalPromise.reject = reject;
-
-    this.fire('firstLoad', this._finalPromise);
-  });
-  finalPromise.catch(()=>{}); // we don't care about the final promise here, but we need to catch it anyway
-  this._finalPromise.promise = finalPromise;
+  this.fire('firstLoad', this._finalPromise.promise);
 };
 
 Loading.prototype._startWaiting = function(name, promise) {
@@ -145,7 +147,8 @@ Loading.prototype._finishLoading = function() {
 
   this._isLoading = false;
   this._promises = {};
-  this._finalPromise = {};
+
+  this._resetFinalPromise();
 };
 
 module.exports = Loading;
