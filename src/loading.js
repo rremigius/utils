@@ -8,6 +8,8 @@ const Loading = function () {
   this._loadErrors = {};
   this._loaded = {};
   this._promises = {};
+  this._lastError = undefined;
+
   this._resetFinalPromise();
 
   this._eventInterface = new EventInterface();
@@ -27,6 +29,14 @@ Loading.prototype._resetFinalPromise = function() {
 
 Loading.prototype.isLoading = function() {
   return this._isLoading;
+};
+
+Loading.prototype.getErrors = function() {
+	return this._loadErrors;
+};
+
+Loading.prototype.getLastError = function() {
+	return this._lastError;
 };
 
 /**
@@ -92,6 +102,7 @@ Loading.prototype.done = function(name, result) {
 Loading.prototype.error = function(name, err) {
   if(this.isFinished(name)) return;
 
+  this._lastError = err;
   this._loadErrors[name] = err;
   if(name in this._promises) {
     this._promises[name].reject(err);
