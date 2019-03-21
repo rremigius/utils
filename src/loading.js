@@ -158,8 +158,6 @@ Loading.prototype._finishLoading = function() {
 
   this._isLoading = false;
   this._promises = {};
-
-  this._resetFinalPromise();
 };
 
 module.exports = Loading;
