@@ -78,3 +78,8 @@ QUnit.test("Log.instance with same name but different parent does not return the
   assert.notEqual(foo2, foo3, "Instance bar/foo not equal to foo/foo.");
   assert.notEqual(foo3, foo1, "Instance foo/foo not equal to foo.");
 });
+
+QUnit.test("Log.getPath() returns the names of its ancestors as path.", function(assert) {
+  let log = Log.instance('foo').instance('bar').instance('qux');
+  assert.deepEqual(log.getPath(), ['foo', 'bar', 'qux']);
+});

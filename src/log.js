@@ -46,8 +46,11 @@ Log.prototype.getParent = function() {
   return this._parent;
 };
 Log.prototype.getPath = function() {
-  let parentPath = this._parent && this._parent.getPath();
-  return parentPath.concat(this.name);
+  if(!this._parent) return [];
+  return this._parent.getPath().concat(this.name);
+};
+Log.prototype.getFullName = function() {
+  return this.getPath().join('/');
 };
 Log.prototype.setDriver = function(driver) {
   this._driver = driver;
@@ -106,7 +109,7 @@ Log.prototype._log = function(method, level, args) {
   }
 };
 Log.prototype._addName = function(args) {
-  [].unshift.apply(args, ['[ ' + this.name + ' ]']);
+  [].unshift.apply(args, ['[ ' + this.getFullName() + ' ]']);
 
   return args;
 };

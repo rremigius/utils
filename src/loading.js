@@ -8,7 +8,9 @@ const Loading = function () {
   this._loadErrors = {};
   this._loaded = {};
   this._promises = {};
-  this._finalPromise = {};
+  this._lastError = undefined;
+
+  this._resetFinalPromise();
 
   this._eventInterface = new EventInterface();
 
@@ -16,8 +18,25 @@ const Loading = function () {
   this.fire = this._eventInterface.getFireMethod();
 };
 
+Loading.prototype._resetFinalPromise = function() {
+  let promise = new Promise((resolve, reject) => {
+    this._finalPromise = {resolve, reject};
+  });
+  promise.catch(()=>{}); // we don't care about the final promise here, but we need to catch it anyway
+  this._finalPromise.promise = promise;
+  return promise;
+};
+
 Loading.prototype.isLoading = function() {
   return this._isLoading;
+};
+
+Loading.prototype.getErrors = function() {
+	return this._loadErrors;
+};
+
+Loading.prototype.getLastError = function() {
+	return this._lastError;
 };
 
 /**
@@ -28,7 +47,7 @@ Loading.prototype.isLoading = function() {
  * @return {Promise<any>}
  */
 Loading.prototype.start = function(name = 'loading', timeout = undefined, promise = undefined) {
-  let loadingPromise = new Promise(async (resolve, reject) => {
+  let loadingPromise = new Promise( (resolve, reject) => {
 
     // Store reject/resolve methods outside of Promise
     this._promises[name] = {
@@ -47,13 +66,7 @@ Loading.prototype.start = function(name = 'loading', timeout = undefined, promis
 
     // Wrap given promise
     if(promise instanceof Promise) {
-      // We use async/await because .then and .catch will throw an 'Uncaught (in Promise)' error.
-      try {
-        let result = await promise;
-        resolve(result);
-      } catch(e) {
-        reject(e);
-      }
+      promise.then(resolve).catch(reject);
     }
   });
   this._promises[name].promise = loadingPromise;
@@ -89,6 +102,7 @@ Loading.prototype.done = function(name, result) {
 Loading.prototype.error = function(name, err) {
   if(this.isFinished(name)) return;
 
+  this._lastError = err;
   this._loadErrors[name] = err;
   if(name in this._promises) {
     this._promises[name].reject(err);
@@ -115,14 +129,7 @@ Loading.prototype._firstLoad = function() {
   this._isLoading = true;
   this._emitStart();
 
-  let finalPromise = new Promise((resolve, reject) => {
-    this._finalPromise.resolve = resolve;
-    this._finalPromise.reject = reject;
-
-    this.fire('firstLoad', this._finalPromise);
-  });
-  finalPromise.catch(()=>{}); // we don't care about the final promise here, but we need to catch it anyway
-  this._finalPromise.promise = finalPromise;
+  this.fire('firstLoad', this._finalPromise.promise);
 };
 
 Loading.prototype._startWaiting = function(name, promise) {
@@ -151,7 +158,6 @@ Loading.prototype._finishLoading = function() {
 
   this._isLoading = false;
   this._promises = {};
-  this._finalPromise = {};
 };
 
 module.exports = Loading;
