@@ -89,6 +89,11 @@ Validation.Validity.createValidValidity = function(name) {
 	Validation.Validity.prototype.setValid = function(valid) {
 		this._valid = valid !== false;
 	};
+	Validation.Validity.prototype.invalidate = function(message) {
+		this.setValid(false);
+		this.setMessage(message);
+		return this;
+	};
 	Validation.Validity.prototype.isValid = function() { return this._valid; };
 	Validation.Validity.prototype.getValue = function() {
 		if(!this.isValid()) return undefined;
@@ -287,7 +292,7 @@ Validation.Validity.createValidValidity = function(name) {
 		} else if (_.isArray(method)) {
 			valid = Validation.validateArray(name, value, method, undefined, _.get(options, 'array'));
 		// validateObject
-		} else if (_.isObject(method)) {
+		} else if (_.isPlainObject(method)) {
 			valid = Validation.validateObject(name, value, method, undefined, options);
 		// Boolean validation
 		} else {
