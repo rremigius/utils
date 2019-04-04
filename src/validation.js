@@ -803,7 +803,7 @@ Validation.isStringOrNumber = function(variable) {
 Validation.isPrimitive = function(variable) {
 	return _.isString(variable) || _.isNumber(variable) || _.isBoolean(variable);
 };
-Validation.isSubClassOf = function(SubClass, Class, includeIdentity = true) {
+Validation.isSubClass = function(SubClass, Class, includeIdentity = true) {
 	return SubClass.prototype instanceof Class || (includeIdentity && SubClass === Class);
 };
 
