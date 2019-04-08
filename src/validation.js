@@ -810,6 +810,9 @@ Validation.isPrimitive = function(variable) {
 	return _.isString(variable) || _.isNumber(variable) || _.isBoolean(variable);
 };
 Validation.isSubClass = function(SubClass, Class, includeIdentity = true) {
+	if(!_.isObject(SubClass)) {
+		return false;
+	}
 	return SubClass.prototype instanceof Class || (includeIdentity && SubClass === Class);
 };
 
