@@ -3,6 +3,8 @@ const String = require('./string');
 const Err = require('./error');
 const Log = require('./log');
 
+const log = Log.instance("Validation");
+
 const Validation = {};
 
 	Validation.Validity = function (name, input, valid, message) {
@@ -690,7 +692,9 @@ Validation.Validity.createValidValidity = function(name) {
 Validation.assertOne = function(name, value, method, message, options) {
   let valid = Validation.validateOne(name, value, method, message, options);
   if(!valid.isValid()) {
-    throw valid.createError();
+  	let error = valid.createError();
+  	log.error(error);
+    throw error;
   }
 
   return true;
@@ -714,7 +718,9 @@ Validation.assertOne = function(name, value, method, message, options) {
 Validation.assert = function(name, checks, consequence) {
   let valid = Validation.validate(name, checks, consequence);
   if(!valid.isValid()) {
-    throw new Err(consequence, valid.createError());
+  	let error = new Err(consequence, valid.createError());
+  	log.error(error);
+    throw error;
   }
 
   return true;
@@ -768,7 +774,7 @@ Validation.ensure = function (variable, evalFunc, defaultValue, message) {
 	if (!evalFunc(variable)) {
 		sure = defaultValue;
 		if (Validation.def(message)) {
-			Log.error("Validation::ensure", message, variable);
+			log.error("Validation::ensure", message, variable);
 		}
 	}
 
@@ -790,7 +796,7 @@ Validation.ensurePath = function(variable, path, evalFunc, defaultValue, message
 	if (!evalFunc(check)) {
 		_.set(variable, path, defaultValue);
 		if (Validation.def(message)) {
-			Validation.Log.error(message, variable);
+			log.error(message, variable);
 		}
 	}
 
@@ -812,7 +818,7 @@ Validation._validationMethods = {
 };
 Validation.setValidationMethod = function(name, func, message) {
   if(!_.isFunction(func)) {
-    Log.error("Function given for validation method '" + name + "' is not a function.");
+    log.error("Function given for validation method '" + name + "' is not a function.");
     return false;
   }
 
