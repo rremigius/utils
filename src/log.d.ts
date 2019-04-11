@@ -32,7 +32,7 @@ export default class Log {
 	setDriver(driver:object):void;
 	resetDriver():void;
 	getDriver():object;
-	setLevel(level:string):void;
+	setLevel(level:number):void;
 	getLevel():string;
 
 	debug(...messages:any):void;
