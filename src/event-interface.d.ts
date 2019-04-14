@@ -1,5 +1,6 @@
 export default class EventInterface {
 	
+	static extend():void;
 	extend():void;
 	getOnMethod():Function;
 	getFireMethod():Function;
