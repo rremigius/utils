@@ -1,7 +1,7 @@
-const { isObject, find, isFunction, isArray, isEmpty } = require('lodash');
+const { isString, isEmpty, isFunction } = require('lodash');
 
 const Log = function(name, driver) {
-  this.name = name || 'Log';
+  this.name = isString(name) ? name.toLowerCase() : 'log';
   this._level = undefined;
   this._parent = undefined;
   this._driver = driver;
@@ -10,19 +10,19 @@ const Log = function(name, driver) {
 Log.nativeLog = console;
 
 Log.prototype.instance = function(name) {
-  if(name in this._instances) {
-    return this._instances[name];
-  }
-  if(isEmpty(name)) {
+  if(!isString(name) || isEmpty(name)) {
     return this;
   }
 
-  // Split path
-  if(!isArray(name)) {
-    name = name.split('/');
+  name = name.toLowerCase();
+
+  // If instance already exist, return it
+  if(name in this._instances) {
+    return this._instances[name];
   }
+
   // Clone path
-  let path = name.slice();
+  let path = name.split('/');
 
   // Get next step name
   let step = path.shift();
@@ -37,7 +37,7 @@ Log.prototype.instance = function(name) {
 
   // Not a leaf yet: recursion
   let child = this.instance(step);
-  return child.instance(path);
+  return child.instance(path.join('/'));
 };
 Log.prototype.setParent = function(parentLog) {
   this._parent = parentLog;

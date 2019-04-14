@@ -11,8 +11,8 @@ export default class Log {
 
 	static root():Log;
 	static instance(name:string):Log;
-	static getLevel():string;
-	static setLevel(level:string):void;
+	static getLevel():number;
+	static setLevel(level:number):void;
 	static getDriver():object;
 	static setDriver(driver:object):void;
 
@@ -33,7 +33,7 @@ export default class Log {
 	resetDriver():void;
 	getDriver():object;
 	setLevel(level:number):void;
-	getLevel():string;
+	getLevel():number;
 
 	debug(...messages:any):void;
 	log(...messages:any):void;
