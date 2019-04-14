@@ -1,3 +1,5 @@
+'use strict';
+
 const EventInterface = function() {
   this._listeners = {};
 };
@@ -15,12 +17,13 @@ EventInterface.prototype.extend = function(obj) {
 EventInterface.prototype.getOnMethod = function() {
   return this.on.bind(this);
 };
+
 EventInterface.prototype.getFireMethod = function() {
   return this.fire.bind(this);
 };
 
 EventInterface.prototype.on = function(event, callback) {
-  if(!(event in this._listeners)) {
+  if (!(event in this._listeners)) {
     this._listeners[event] = [];
   }
 
@@ -28,11 +31,11 @@ EventInterface.prototype.on = function(event, callback) {
 };
 
 EventInterface.prototype.fire = function(event, data) {
-  if(!(event in this._listeners)) {
+  if (!(event in this._listeners)) {
     return;
   }
 
-  for(let i in this._listeners[event]) {
+  for (let i in this._listeners[event]) {
     this._listeners[event][i](data);
   }
 };
