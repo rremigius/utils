@@ -9,4 +9,6 @@ export default class Err {
 	constructor(specs:object, originalError?:Error);
 	constructor(message:string, originalError?:Error);
 	constructor(message:string, code:string|number);
+
+	getDeepestError():Err;
 }
