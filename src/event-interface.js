@@ -22,12 +22,27 @@ EventInterface.prototype.getFireMethod = function() {
   return this.fire.bind(this);
 };
 
+EventInterface.prototype.getOffMethod = function() {
+	return this.off.bind(this);
+};
+
 EventInterface.prototype.on = function(event, callback) {
   if (!(event in this._listeners)) {
     this._listeners[event] = [];
   }
 
   this._listeners[event].push(callback);
+};
+
+EventInterface.prototype.off = function(event, callback) {
+	if(!(event in this._listeners)) return;
+	let listeners = this._listeners[event];
+
+	for(let i = listeners.length-1; i >= 0; i--) {
+		if(listeners[i] === callback) {
+			listeners.splice(i, 1);
+		}
+	}
 };
 
 EventInterface.prototype.fire = function(event, data) {
