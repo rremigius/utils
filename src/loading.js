@@ -75,7 +75,6 @@ Loading.prototype.start = function(name = 'main', timeout = undefined, promise =
     }
   });
   this._promises[name].promise = loadingPromise;
-  loadingPromise.catch(()=>{});
 
   // First thing loading
   if(!this._isLoading) {
@@ -95,8 +94,8 @@ Loading.prototype.wait = function(name) {
 };
 
 Loading.prototype.done = function(name, result) {
-	log.log(this._name +": finished loading: ", name);
   if(this.isFinished(name)) return;
+	log.log(this._name +": finished loading: ", name);
 
   this._loaded[name] = result;
   if(name in this._promises) {
