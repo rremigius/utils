@@ -809,8 +809,11 @@ Validation.isStringOrNumber = function(variable) {
 Validation.isPrimitive = function(variable) {
 	return _.isString(variable) || _.isNumber(variable) || _.isBoolean(variable);
 };
+Validation.isClass = function(variable) {
+	return _.isFunction(variable);
+};
 Validation.isSubClass = function(SubClass, Class, includeIdentity = true) {
-	if(!_.isObject(SubClass)) {
+	if(!_.isFunction(SubClass)) {
 		return false;
 	}
 	return SubClass.prototype instanceof Class || (includeIdentity && SubClass === Class);

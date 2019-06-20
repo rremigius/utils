@@ -1,6 +1,7 @@
 import Err from "@utils/error";
 
-type Class = {
+export type Class = {
+	name:string;
 	new (...args: any[]): Object;
 };
 
@@ -38,4 +39,5 @@ export function ensure(value:any, evalFunc:Function, defaultValue:any, message:s
 export function ensurePath(value:any, path:string|[string], evalFunc:Function, defaultValue:any, message:string):object;
 export function isStringOrNumber(value:any):boolean;
 export function isPrimitive(value:any):boolean;
-export function isSubClass(SubClass:Class, Class:Class, includeIdentity?:true):boolean;
+export function isClass(value:any):value is Class;
+export function isSubClass(SubClass:any, Class:Class, includeIdentity?:boolean):boolean;

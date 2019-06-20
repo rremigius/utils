@@ -6,7 +6,9 @@ export default class Err {
 	errorMap?: {[key:string]:Error};
 	originalError?: Error;
 
-	constructor(specs:object, originalError?:Error);
-	constructor(message:string, originalError?:Error);
+	constructor(specs:object, originalError?:Err);
+	constructor(message:string, originalError?:Err);
 	constructor(message:string, code:string|number);
+
+	getDeepestError():Err;
 }

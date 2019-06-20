@@ -2,8 +2,12 @@
 
 const Err  = require('./error');
 const EventInterface = require('./event-interface');
+const Log = require('./log');
 
-const Loading = function () {
+const log = Log.instance('utils/loading');
+
+const Loading = function (name) {
+	this._name = name || 'Loading';
   this._isLoading = false;
   this._loadErrors = {};
   this._loaded = {};
@@ -46,7 +50,8 @@ Loading.prototype.getLastError = function() {
  * @param {Promise} promise   Existing promise to wait for.
  * @return {Promise<any>}
  */
-Loading.prototype.start = function(name = 'loading', timeout = undefined, promise = undefined) {
+Loading.prototype.start = function(name = 'main', timeout = undefined, promise = undefined) {
+	log.log(this._name +": started loading: ", name);
   let loadingPromise = new Promise( (resolve, reject) => {
 
     // Store reject/resolve methods outside of Promise
@@ -70,7 +75,6 @@ Loading.prototype.start = function(name = 'loading', timeout = undefined, promis
     }
   });
   this._promises[name].promise = loadingPromise;
-  loadingPromise.catch(()=>{});
 
   // First thing loading
   if(!this._isLoading) {
@@ -91,6 +95,7 @@ Loading.prototype.wait = function(name) {
 
 Loading.prototype.done = function(name, result) {
   if(this.isFinished(name)) return;
+	log.log(this._name +": finished loading: ", name);
 
   this._loaded[name] = result;
   if(name in this._promises) {
@@ -100,6 +105,7 @@ Loading.prototype.done = function(name, result) {
 };
 
 Loading.prototype.error = function(name, err) {
+	log.error(this._name +": error loading: ", name);
   if(this.isFinished(name)) return;
 
   this._lastError = err;
@@ -111,6 +117,15 @@ Loading.prototype.error = function(name, err) {
 
 Loading.prototype.isFinished = function(name) {
   return name in this._loadErrors || name in this._loaded;
+};
+
+Loading.prototype.subLoading = function(subLoading, name) {
+	if(!(subLoading instanceof Loading)) {
+		log.error("Can only listen to other Loading instance.", subLoading);
+	}
+	subLoading.on('start', ()=>this.start(name));
+	subLoading.on('load', ()=>this.done(name));
+	subLoading.on('error', ()=>this.error(name));
 };
 
 Loading.prototype._emitStart = function() {
@@ -152,6 +167,7 @@ Loading.prototype._finishLoading = function() {
     this._finalPromise.reject(this._loadErrors);
     this._emitError(new Err({message: "Error loading.", errorMap: this._loadErrors}));
   } else {
+		log.log(this._name +": finished loading all tasks.");
     this._finalPromise.resolve(this._loaded);
     this._emitDone(this._loaded);
   }
