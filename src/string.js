@@ -23,6 +23,11 @@ Str.capitaliseFirst = function (s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
+Str.parseNumber = function(value, defaultValue) {
+  let number = parseFloat(value);
+  return _.isFinite(number) ? number : defaultValue;
+};
+
 Str.dotString = function(number) {
   if(!_.isNumber(number)) {
     return "";
