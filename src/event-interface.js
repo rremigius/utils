@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const EventInterface = function() {
   this._listeners = {};
 };
@@ -50,8 +52,16 @@ EventInterface.prototype.fire = function(event, data) {
     return;
   }
 
+  // Remove listeners marked for removal
+	_.remove(this._listeners[event], listener => listener.remove);
+
   for (let i in this._listeners[event]) {
-    this._listeners[event][i](data);
+  	let listener = this._listeners[event][i];
+  	if(_.isFunction(listener.callback)) {
+  		listener.callback(data);
+		} else {
+			this._listeners[event][i](data);
+		}
   }
 };
 
