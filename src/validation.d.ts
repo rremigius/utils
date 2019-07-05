@@ -40,4 +40,4 @@ export function ensurePath(value:any, path:string|[string], evalFunc:Function, d
 export function isStringOrNumber(value:any):boolean;
 export function isPrimitive(value:any):boolean;
 export function isClass(value:any):value is Class;
-export function isSubClass(SubClass:any, Class:Class, includeIdentity?:boolean):boolean;
+export function isSubClass(SubClass:any, Class:Class, includeIdentity?:boolean):SubClass is typeof Class;
