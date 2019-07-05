@@ -1,6 +1,6 @@
 export type EventDescription = {
 	name?:string,
-	payload: any
+	payload?: any
 }
 
 type OnType = <T extends EventDescription>(event:string, callback:Callback<T['payload']>)=>void;
