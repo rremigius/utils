@@ -16,12 +16,12 @@ export default class Log {
 	static getDriver():object;
 	static setDriver(driver:object):void;
 
-	static debug(...messages:any):void;
-	static log(...messages:any):void;
-	static info(...messages:any):void;
-	static warn(...messages:any):void;
-	static error(...messages:any):void;
-	static trace(...messages:any):void;
+	static debug(...messages:any[]):void;
+	static log(...messages:any[]):void;
+	static info(...messages:any[]):void;
+	static warn(...messages:any[]):void;
+	static error(...messages:any[]):void;
+	static trace(...messages:any[]):void;
 
 	name: string;
 
@@ -35,10 +35,10 @@ export default class Log {
 	setLevel(level:number):void;
 	getLevel():number;
 
-	debug(...messages:any):void;
-	log(...messages:any):void;
-	info(...messages:any):void;
-	warn(...messages:any):void;
-	error(...messages:any):void;
-	trace(...messages:any):void;
+	debug(...messages:any[]):void;
+	log(...messages:any[]):void;
+	info(...messages:any[]):void;
+	warn(...messages:any[]):void;
+	error(...messages:any[]):void;
+	trace(...messages:any[]):void;
 }
