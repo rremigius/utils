@@ -806,8 +806,15 @@ Validation.ensurePath = function(variable, path, evalFunc, defaultValue, message
 Validation.isStringOrNumber = function(variable) {
 	return !isNaN(parseFloat(variable)) || _.isString(variable);
 };
-Validation.isNumberParsable = function(variable) {
-	return !isNaN(parseFloat(variable));
+Validation.safeParseNumber = function(variable) {
+	if (typeof variable === 'number') return variable;
+	if (typeof variable !== 'string') return null;
+
+	// variable is string from here on
+	let asNumber = parseFloat(variable);
+	if(isNaN(asNumber)) return null;
+
+	return asNumber.toString() === variable ? variable : null;
 };
 Validation.isPrimitive = function(variable) {
 	return _.isString(variable) || _.isNumber(variable) || _.isBoolean(variable);
