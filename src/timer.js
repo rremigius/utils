@@ -38,4 +38,7 @@ Timer.prototype.getAverage = function() {
 Timer.prototype.log = function() {
 	console.log(`Timer [${this.name}] Current: ${this.duration} ms; Average: ${this.getAverage()} ms; Count: ${this.getStats().count}.`);
 };
+Timer.prototype.logSplit = function(name) {
+	console.log(`Timer [${this.name}] split [${name}]: ${Date.now()-this.start} ms.`);
+};
 module.exports = Timer;
