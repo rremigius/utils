@@ -41,3 +41,6 @@ export function isStringOrNumber(value:any):boolean;
 export function isPrimitive(value:any):boolean;
 export function isClass(value:any):value is Class;
 export function isSubClass(SubClass:any, Class:Class, includeIdentity?:boolean):SubClass is typeof Class;
+export function checkType(value:any, type:string, name:string);
+export function checkInstance(value:any, Class:Class, name:string);
+export function checkMethod(value:any, method:string, name:string);
