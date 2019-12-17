@@ -867,6 +867,9 @@ Validation.checkInstance = function(value, _class, name) {
 	return value;
 };
 Validation.checkType = function(value, type, name) {
+	if(Validation.isClass(type)) {
+		return Validation.checkInstance(value, type, name);
+	}
 	let check;
 	switch(type) {
 		case 'string': check = _.isString; break;
