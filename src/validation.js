@@ -857,34 +857,44 @@ function getValueType(value) {
 	return type;
 }
 
-Validation.checkInstance = function(value, _class, name) {
-	if(typeof(_class) !== 'function') {
-		throw new Error("Supposed to check for class instance but invalid class provided.");
-	}
-	if(!(value instanceof _class)) {
-		throw new Error(`${namePrefix(name)}Expected instance of ${_class.name}, ${getValueType(value)} given.`);
-	}
-	return value;
-};
-Validation.checkType = function(value, type, name) {
+Validation.checkType = function(value, type, name, defaultValue = undefined, warnIf = x=>!_.isNil(x)) {
+	let valid = false;
+	let expectedType = type;
+
+	// Validate
 	if(Validation.isClass(type)) {
-		return Validation.checkInstance(value, type, name);
-	}
-	let check;
-	switch(type) {
-		case 'string': check = _.isString; break;
-		case 'number': check = _.isNumber; break;
-		case 'boolean': check = (value) => value === true || value === false; break;
-		case 'object': check = _.isPlainObject; break;
-		case 'array': check = _.isArray; break;
-		case 'function': check = _.isFunction; break;
-		default: check = () => false;
-	}
-	if(!check(value)) {
-		throw new Error(`${namePrefix(name)}Expected ${type}, ${getValueType(value)} given.`);
+		valid = value instanceof type;
+		expectedType = `instance of ${type.name}`;
+	} else if(_.isString(type)) {
+		switch(type) {
+			case 'string': 		valid = _.isString(value); break;
+			case 'number': 		valid = _.isNumber(value); break;
+			case 'boolean': 	valid = value === true || value === false; break;
+			case 'object': 		valid = _.isPlainObject(value); break;
+			case 'array': 		valid = _.isArray(value); break;
+			case 'function': 	valid = _.isFunction(value); break;
+			default: 			valid = false;
+		}
 	}
 
-	return value;
+	// All good, just return value
+	if(valid) {
+		return value;
+	}
+
+	// Without default value we cannot continue and we have to throw an Error
+	if(defaultValue === undefined) {
+		throw new Error(`${namePrefix(name)}Expected ${expectedType}, ${getValueType(value)} given.`);
+	}
+	// Generate default value from given function
+	if(_.isFunction(defaultValue)) {
+		defaultValue = defaultValue(value);
+	}
+	// Should we provide a warning?
+	if(warnIf(value)) {
+		log.warn(`${namePrefix(name)}Expected ${type}, ${getValueType(value)} given. Using default:`, defaultValue);
+	}
+	return defaultValue;
 };
 Validation.checkMethod = function(value, method, name) {
 	if(!isObject(value) || !isFunction(value[method])) {
