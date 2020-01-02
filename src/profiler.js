@@ -1,4 +1,5 @@
 const Log = require('./log');
+const { round } = require('lodash');
 
 const log = Log.instance("utils/profiler");
 
@@ -15,7 +16,7 @@ Profiler.prototype.stop = function(logInterval = 1) {
 		const endCount = (profilerEndCounts[this.name] || 0) + 1;
 		const total = (profilerTotals[this.name] || 0) + this.getTime();
 		if(endCount % logInterval === 0) {
-			const average = endCount > 1 ? ` Average: ${total / endCount} ms.` : '';
+			const average = endCount > 1 ? ` Average: ${round(total / endCount, 1)} ms.` : '';
 			log.log(`${this.name}: ${this.getTime()} ms.${average}`);
 		}
 		profilerTotals[this.name] = total;
