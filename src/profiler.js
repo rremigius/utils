@@ -18,6 +18,7 @@ Profiler.prototype.stop = function(logInterval = 1) {
 			const average = endCount > 1 ? ` Average: ${total / endCount} ms.` : '';
 			log.log(`${this.name}: ${this.getTime()} ms.${average}`);
 		}
+		profilerTotals[this.name] = total;
 		profilerEndCounts[this.name] = endCount;
 	}
 };
