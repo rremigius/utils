@@ -41,13 +41,13 @@ Profiler.start = function(name) {
 	profiler.start();
 	return profiler;
 };
-Profiler.stop = function(name, log = 0) {
+Profiler.stop = function(name, logInterval = 1) {
 	const profiler = Profiler.get(name);
 	if(!profiler) {
 		log.error(`Profiler not running: ${name}.`);
 		return;
 	}
-	profiler.stop(log);
+	profiler.stop(logInterval);
 };
 
 module.exports = Profiler;
