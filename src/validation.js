@@ -897,8 +897,7 @@ Validation.checkType = function(value, type, name, defaultValue = undefined, war
 	return defaultValue;
 };
 Validation.checkMethod = function(value, method, name) {
-	if(!isObject(value) || !isFunction(value[method])) {
-		console.log(value);
+	if(!_.isObject(value) || !_.isFunction(value[method])) {
 		throw new Error(`${namePrefix(name)}Missing method ${method}.`);
 	}
 };
