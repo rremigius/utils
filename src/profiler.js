@@ -16,7 +16,7 @@ Profiler.prototype.stop = function(logInterval = 1) {
 		const endCount = (profilerEndCounts[this.name] || 0) + 1;
 		const total = (profilerTotals[this.name] || 0) + this.getTime();
 		if(endCount % logInterval === 0) {
-			const average = endCount > 1 ? ` Average: ${round(total / endCount, 1)} ms.` : '';
+			const average = endCount > 1 ? ` Average: ${round(total / endCount, 1)} ms (${endCount} measurements).` : '';
 			log.log(`${this.name}: ${this.getTime()} ms.${average}`);
 		}
 		profilerTotals[this.name] = total;
