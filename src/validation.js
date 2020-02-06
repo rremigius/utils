@@ -900,6 +900,13 @@ Validation.checkMethod = function(value, method, name) {
 	if(!_.isObject(value) || !_.isFunction(value[method])) {
 		throw new Error(`${namePrefix(name)}Missing method ${method}.`);
 	}
+	return value;
+};
+Validation.checkMethods = function(value, methods, name) {
+	_.forEach(methods, function(method) {
+		Validation.checkMethod(value, method, name);
+	});
+	return value;
 };
 
 // Populate validation methods with lodash validations
