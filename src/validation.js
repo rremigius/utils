@@ -482,7 +482,7 @@ Validation.Validity.createValidValidity = function(name) {
 		}
 
 		if(!_.isObject(obj)) {
-			var invalid = new Validation.Validity(name, checks, false, "Invalid object.");
+			var invalid = new Validation.Validity(name, obj, false, "Invalid object.");
 			callback(invalid);
 			return invalid;
 		}
