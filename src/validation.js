@@ -898,14 +898,14 @@ Validation.checkType = function(value, type, name, defaultValue = undefined, war
 };
 Validation.checkMethod = function(value, method, name) {
 	if(!_.isObject(value) || !_.isFunction(value[method])) {
-		throw new Error(`${namePrefix(name)}Missing method ${method}.`);
+		throw new Error(`${namePrefix(name)}Missing method '${method}'.`);
 	}
 	return value;
 };
 Validation.checkMethods = function(value, methods, name) {
-	_.forEach(methods, function(method) {
-		Validation.checkMethod(value, method, name);
-	});
+	for(let i = 0; i < methods.length; i++) {
+		Validation.checkMethod(value, methods[i], name);
+	}
 	return value;
 };
 
