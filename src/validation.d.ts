@@ -43,3 +43,4 @@ export function isClass(value:any):value is Class;
 export function isSubClass(SubClass:any, Class:Class, includeIdentity?:boolean):SubClass is typeof Class;
 export function checkType(value:any, type:string, name?:string, defaultValue?:any, warnIf?:(value)=>boolean);
 export function checkMethod(value:any, method:string, name?:string);
+export function checkMethods(value:any, methods:[string], name?:string);
