@@ -2,7 +2,7 @@ import Err from "@utils/error";
 
 export type Class = {
 	name:string;
-	new (...args: any[]): Object;
+	new (...args: any[]): {};
 };
 
 export class Validity {
