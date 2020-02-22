@@ -850,12 +850,8 @@ function namePrefix(name) {
 }
 
 function getValueType(value) {
-	const type = typeof(value);
-	if(type === 'function') {
-		return type.name;
-	}
-	return type;
-}
+	return _.isFunction(value) ? type.name : type;
+};
 
 Validation.checkType = function(value, type, name, defaultValue = undefined, warnIf = x=>!_.isNil(x)) {
 	let valid = false;
@@ -884,7 +880,7 @@ Validation.checkType = function(value, type, name, defaultValue = undefined, war
 
 	// Without default value we cannot continue and we have to throw an Error
 	if(defaultValue === undefined) {
-		throw new Error(`${namePrefix(name)}Expected ${expectedType}, ${getValueType(value)} given.`);
+		throw Validation.typeError(value, expectedType, name);
 	}
 	// Generate default value from given function
 	if(_.isFunction(defaultValue)) {
@@ -907,6 +903,9 @@ Validation.checkMethods = function(value, methods, name) {
 		Validation.checkMethod(value, methods[i], name);
 	}
 	return value;
+};
+Validation.typeError = function(value, expectedType, name) {
+	return new Error(`${namePrefix(name)}Expected ${expectedType}, ${getValueType(value)} given.`);
 };
 
 // Populate validation methods with lodash validations
