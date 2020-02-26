@@ -1,6 +1,6 @@
 'use strict';
 
-const {isObject, forEach, isNumber, isString, get} = require('lodash');
+const {isObject, forEach, isNumber, isString, isNil} = require('lodash');
 
 const Err = function(specs, originalError) {
   if (isString(specs)) {
@@ -28,13 +28,21 @@ const Err = function(specs, originalError) {
 
   Error.call(this, this.message);
   this.message = specs.message || "An error occurred.";
-  this.code = specs.code;
-  this.data = specs.data;
-  this.public = specs.public || true;
-  this.errorMap = specs.errorMap;
-  this.originalError = specs.originalError;
-
-  this.stack = get(originalError, 'stack') || (new Error()).stack;
+  if(!isNil(specs.code)) {
+		this.code = specs.code;
+	}
+  if(!isNil(specs.data)) {
+		this.data = specs.data;
+	}
+  if(!isNil(specs.public)) {
+  	this.public = specs.public;
+	}
+  if(!isNil(specs.errorMap)) {
+		this.errorMap = specs.errorMap;
+	}
+  if(!isNil(specs.originalError)) {
+		this.originalError = specs.originalError;
+	}
 };
 // Inherit
 Err.prototype = Object.create(Error.prototype);
