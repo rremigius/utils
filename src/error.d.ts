@@ -1,5 +1,6 @@
 export default class Err {
 	message?: string;
+	cause?: string;
 	code?: string|number;
 	data?: {[key:string]:any};
 	public?: boolean;
@@ -11,4 +12,5 @@ export default class Err {
 	constructor(message:string, code:string|number);
 
 	getDeepestError():Err;
+	getMessageAndCause():string;
 }

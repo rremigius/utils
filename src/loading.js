@@ -80,6 +80,8 @@ Loading.prototype.start = function(name = 'main', timeout = undefined, promise =
   });
   loadingPromise.catch((err)=>{
   	log.error(this._name +": failed loading: ", name, err);
+		this._lastError = err;
+		this._loadErrors[name] = err;
 	});  // we don't care about the promise here, but we need to catch it anyway
   this._promises[name].promise = loadingPromise;
 
@@ -125,8 +127,6 @@ Loading.prototype.done = function(name, result) {
 Loading.prototype.error = function(name, err) {
   if(this.isFinished(name)) return;
 
-  this._lastError = err;
-  this._loadErrors[name] = err;
   if(name in this._promises) {
     this._promises[name].reject(err);
   }

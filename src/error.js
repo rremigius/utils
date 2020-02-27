@@ -82,6 +82,14 @@ Err.prototype.getMessage = function() {
   return this.message;
 };
 
+Err.prototype.getMessageAndCause = function() {
+	let str = this.message;
+	if(this.cause) {
+		str += ' - ' + this.cause;
+	}
+	return str;
+};
+
 Err.prototype.getDeepestError = function() {
   if (this.originalError instanceof Err) {
     return this.originalError.getDeepestError();
