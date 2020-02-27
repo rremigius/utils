@@ -64,16 +64,23 @@ Loading.prototype.start = function(name = 'main', timeout = undefined, promise =
     if(timeout) {
       setTimeout(()=>{
         if(!this.isFinished(name)) {
-          reject(new Err("Timed out."))
+          reject(new Err(`Task timed out (${timeout}ms).`))
         }
       }, timeout);
     }
 
     // Wrap given promise
     if(promise instanceof Promise) {
-      promise.then(resolve).catch(reject);
+      promise.catch(err=>{
+					this._loadErrors[name] = err;
+					reject(err)
+				});
+			promise.then(resolve).catch(()=>{});
     }
   });
+  loadingPromise.catch((err)=>{
+  	log.error(this._name +": failed loading: ", name, err);
+	});  // we don't care about the promise here, but we need to catch it anyway
   this._promises[name].promise = loadingPromise;
 
   // First thing loading
@@ -86,11 +93,22 @@ Loading.prototype.start = function(name = 'main', timeout = undefined, promise =
   return loadingPromise;
 };
 
-Loading.prototype.wait = function(name) {
-  if(name === undefined) {
-    return this._finalPromise.promise;
-  }
-  return this._promises[name].promise;
+Loading.prototype.wait = function(name, timeout = undefined) {
+	return new Promise((resolve, reject) => {
+		const task = name === undefined ? this._finalPromise : this._promises[name];
+		let timer;
+		if(timeout) {
+			timer = setTimeout(()=>{
+				const taskName = name ? ` (${name})` : '';
+				reject(new Err(`Waiting for ${this._name}${taskName} timed out (${timeout} ms).`));
+			}, timeout);
+		}
+		task.promise.then(resolve).catch(()=>{});
+		task.promise.catch(reject);
+		task.promise.finally(()=>{
+			clearTimeout(timer);
+		}).catch(e=>{});
+	});
 };
 
 Loading.prototype.done = function(name, result) {
@@ -105,7 +123,6 @@ Loading.prototype.done = function(name, result) {
 };
 
 Loading.prototype.error = function(name, err) {
-	log.error(this._name +": error loading: ", name);
   if(this.isFinished(name)) return;
 
   this._lastError = err;
@@ -164,8 +181,9 @@ Loading.prototype._startWaiting = function(name, promise) {
 
 Loading.prototype._finishLoading = function() {
   if(Object.keys(this._loadErrors).length > 0) {
-    this._finalPromise.reject(this._loadErrors);
-    this._emitError(new Err({message: "Error loading.", errorMap: this._loadErrors}));
+  	const error = new Err({message: "Error loading.", errorMap: this._loadErrors});
+    this._finalPromise.reject(error);
+    this._emitError(error);
   } else {
 		log.log(this._name +": finished loading all tasks.");
     this._finalPromise.resolve(this._loaded);

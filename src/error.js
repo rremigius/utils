@@ -1,6 +1,20 @@
 'use strict';
 
-const {isObject, forEach, isNumber, isString, isNil} = require('lodash');
+const {isObject, forEach, isNumber, isString, isNil, isPlainObject, keys} = require('lodash');
+
+function getCause(originalError, errorMap) {
+	if(originalError) {
+		return originalError.cause || originalError.message;
+	}
+	const errorKeys = keys(errorMap);
+	if(isPlainObject(errorMap) && errorKeys.length > 0) {
+		const error = errorMap[errorKeys[0]];
+		if(error instanceof Error) {
+			return error.cause || error.message;
+		}
+		return error;
+	}
+}
 
 const Err = function(specs, originalError) {
   if (isString(specs)) {
@@ -8,13 +22,19 @@ const Err = function(specs, originalError) {
       message: specs
     };
   }
+  if(specs instanceof Error) {
+  	specs = {
+  		message: specs.message,
+			code: specs.code
+		}
+	}
   specs = specs || {};
 
   if (originalError instanceof Err) {
     specs.originalError = originalError;
   }
   // Convert native Error to Err
-  if (originalError instanceof Error) {
+  if (originalError instanceof Error && !(originalError instanceof Err)) {
     specs.originalError = new Err(originalError);
   }
   // Propagate error code
@@ -28,6 +48,10 @@ const Err = function(specs, originalError) {
 
   Error.call(this, this.message);
   this.message = specs.message || "An error occurred.";
+  if(!isNil(specs.originalError) || isPlainObject(specs.errorMap)) {
+  	// Keeps record of the deepest cause
+  	this.cause = getCause(specs.originalError, specs.errorMap);
+	}
   if(!isNil(specs.code)) {
 		this.code = specs.code;
 	}
@@ -37,7 +61,7 @@ const Err = function(specs, originalError) {
   if(!isNil(specs.public)) {
   	this.public = specs.public;
 	}
-  if(!isNil(specs.errorMap)) {
+  if(isPlainObject(specs.errorMap)) {
 		this.errorMap = specs.errorMap;
 	}
   if(!isNil(specs.originalError)) {

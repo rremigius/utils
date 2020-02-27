@@ -85,7 +85,7 @@ QUnit.test("Loading.error rejects promise and finishes loading.", async function
   }
 });
 
-QUnit.test("Loading.error rejects final promise with error map.", async function(assert) {
+QUnit.test("Loading.error rejects final promise with error with error map.", async function(assert) {
   let loading = new Loading();
   loading.start('foo');
   loading.start('bar');
@@ -94,9 +94,9 @@ QUnit.test("Loading.error rejects final promise with error map.", async function
   try {
     await loading.wait();
     assert.ok(false, "Final promise should not resolve.");
-  } catch(errorMap) {
-    assert.equal(errorMap.bar.message, 'abc', "Error message in error map");
-    assert.notOk('foo' in errorMap, 'Foo should not be in error map');
+  } catch(error) {
+    assert.equal(error.errorMap.bar.message, 'abc', "Error message in error map");
+    assert.notOk('foo' in error.errorMap, 'Foo should not be in error map');
   }
 });
 

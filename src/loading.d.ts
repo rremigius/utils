@@ -7,7 +7,7 @@ export default class Loading{
 	getErrors():Record<string, Err>;
 	getLastError():Err;
 	start(task:string, timeout?:number, promise?:Promise<any>):Promise<any>;
-	wait(task?:string):Promise<any>;
+	wait(task?:string, timeout?:number):Promise<any>;
 	done(task:string, result?:any):Promise<any>;
 	error(task:string, err:Err):void;
 	isFinished(task:string):boolean;
