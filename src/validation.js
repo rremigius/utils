@@ -850,8 +850,8 @@ function namePrefix(name) {
 }
 
 function getValueType(value) {
-	return _.isFunction(value) ? type.name : type;
-};
+	return _.isFunction(value) ? value.name : value;
+}
 
 Validation.checkType = function(value, type, name, defaultValue = undefined, warnIf = x=>!_.isNil(x)) {
 	let valid = false;
