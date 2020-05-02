@@ -850,8 +850,8 @@ function namePrefix(name) {
 }
 
 function getValueType(value) {
-	return _.isFunction(value) ? type.name : type;
-};
+	return _.isFunction(value) ? value.name : value;
+}
 
 Validation.checkType = function(value, type, name, defaultValue = undefined, warnIf = x=>!_.isNil(x)) {
 	let valid = false;
@@ -869,6 +869,7 @@ Validation.checkType = function(value, type, name, defaultValue = undefined, war
 			case 'object': 		valid = _.isPlainObject(value); break;
 			case 'array': 		valid = _.isArray(value); break;
 			case 'function': 	valid = _.isFunction(value); break;
+			case 'alphanumeric':valid = Validation.isStringOrNumber(value); break;
 			default: 			valid = false;
 		}
 	}

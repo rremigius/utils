@@ -1,6 +1,7 @@
 'use strict';
 
 const {isObject, forEach, isNumber, isString, isNil, isPlainObject, keys} = require('lodash');
+const StackTrace = require('stacktrace-js');
 
 function getCause(originalError, errorMap) {
 	if(originalError) {
@@ -25,7 +26,8 @@ const Err = function(specs, originalError) {
   if(specs instanceof Error) {
   	specs = {
   		message: specs.message,
-			code: specs.code
+			code: specs.code,
+			stack: specs.stack
 		}
 	}
   specs = specs || {};
@@ -67,7 +69,39 @@ const Err = function(specs, originalError) {
   if(!isNil(specs.originalError)) {
 		this.originalError = specs.originalError;
 	}
+	if(!isNil(specs.stack)) {
+		this.stack = specs.stack;
+	} else {
+		this.stack = (new Error).stack;
+	}
 };
+
+// Static
+
+/**
+ * Find deepest stack trace and print it.
+ * @param {Error} error
+ * @param {Log} [logger] 			Alternative for console
+ * @param {string} [rootError]		Will be shown first. Defaults to first argument.
+ * @returns {boolean} 	Whether or not the stack trace was printed
+ */
+Err.printStackTrace = function(error, logger = console, rootError = null) {
+	if(!rootError) rootError = error;
+
+	if(error.originalError instanceof Error) {
+		return Err.printStackTrace(error.originalError, logger, rootError);
+	}
+	if(error instanceof Error) {
+		StackTrace.fromError(error).then(stack => {
+			console.error(error);
+			logger.error(rootError, "\nStack trace:\n" + stack.join("\n"));
+		});
+		return true;
+	}
+	logger.error(rootError, "(no stack trace).");
+	return false;
+};
+
 // Inherit
 Err.prototype = Object.create(Error.prototype);
 Err.prototype.constructor = Error;
