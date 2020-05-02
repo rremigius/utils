@@ -10,7 +10,7 @@ export default class Loading{
 	wait(task?:string, timeout?:number):Promise<any>;
 	done(task:string, result?:any):Promise<any>;
 	error(task:string, err:Err):void;
-	isFinished(task:string):boolean;
+	isFinished(task?:string):boolean;
 	subLoading(loading:Loading, name:string):void;
 
 	// From EventInterface

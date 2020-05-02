@@ -13,6 +13,7 @@ const Loading = function (name) {
   this._loaded = {};
   this._promises = {};
   this._lastError = undefined;
+  this._isFinished = false;
 
   this._resetFinalPromise();
 
@@ -51,6 +52,7 @@ Loading.prototype.getLastError = function() {
  * @return {Promise<any>}
  */
 Loading.prototype.start = function(name = 'main', timeout = undefined, promise = undefined) {
+	this._isFinished = false;
 	log.log(this._name +": started loading: ", name);
   let loadingPromise = new Promise( (resolve, reject) => {
 
@@ -133,6 +135,9 @@ Loading.prototype.error = function(name, err) {
 };
 
 Loading.prototype.isFinished = function(name) {
+	if(!name) {
+		return this._isFinished;
+	}
   return name in this._loadErrors || name in this._loaded;
 };
 
@@ -191,6 +196,7 @@ Loading.prototype._finishLoading = function() {
   }
 
   this._isLoading = false;
+  this._isFinished = true;
   this._promises = {};
 };
 
