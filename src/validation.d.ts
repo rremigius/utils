@@ -1,4 +1,4 @@
-import Err from "@utils/error";
+import Err from "./error";
 
 export type Class = {
 	name:string;
