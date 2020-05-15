@@ -1,6 +1,6 @@
 'use strict';
 
-const {isObject, forEach, isNumber, isString, isNil, isPlainObject, keys} = require('lodash');
+const {isObject, forEach, isNumber, isString, isNil, isPlainObject, keys, set} = require('lodash');
 const StackTrace = require('stacktrace-js');
 
 function getCause(originalError, errorMap) {
@@ -156,6 +156,12 @@ Err.prototype.getPublicInfo = function() {
 	if(publicError.originalError instanceof Err) {
 		publicError.originalError = publicError.originalError.getPublicInfo();
 	}
+	forEach(this.errorMap, (error, key) => {
+		if(!(error instanceof Err)) return;
+		const publicInfo = error.getPublicInfo();
+		if(!publicInfo) return;
+		set(publicError, 'errorMap.'+key, publicInfo);
+	});
 	return publicError;
 };
 
