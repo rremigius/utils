@@ -79,7 +79,7 @@ const Err = function (specs, originalError) {
 	if (!isNil(specs.stack)) {
 		this.stack = specs.stack;
 	} else {
-		this.stack = (new Error).stack;
+		this.stack = (new Error()).stack;
 	}
 };
 
