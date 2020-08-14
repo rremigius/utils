@@ -7,8 +7,8 @@
     "test": "tests"
   },
   "dependencies": {
-    "jquery": "^3.4.1",
-    "lodash": "^4.17.15",
+    "jquery": "^3.5.1",
+    "lodash": "^4.17.20",
     "mixin-deep": "^2.0.1",
     "set-value": "^3.0.1",
     "stacktrace-js": "^2.0.2"
@@ -18,8 +18,8 @@
     "html-webpack-plugin": "^3.2.0",
     "path": "^0.12.7",
     "webpack": "^4.29.6",
-    "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "^3.2.1"
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
   },
   "scripts": {
     "test": "webpack-dev-server -d --open --config webpack.test.js"
