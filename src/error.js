@@ -38,6 +38,9 @@ const Err = function (specs, originalError) {
 	if (originalError instanceof Err) {
 		specs.originalError = originalError;
 	}
+	if (originalError === null) {
+		delete specs.originalError;
+	}
 	// Convert native Error to Err
 	if (originalError instanceof Error && !(originalError instanceof Err)) {
 		specs.originalError = new Err(originalError);
@@ -152,16 +155,19 @@ Err.prototype.getPublicInfo = function() {
 		}
 		return this.originalError.getPublicInfo();
 	}
-	const publicError = new Err(this);
-	if(publicError.originalError instanceof Err) {
-		publicError.originalError = publicError.originalError.getPublicInfo();
+	let originalError;
+	if(this.originalError instanceof Err) {
+		originalError = this.originalError.getPublicInfo();
 	}
+	const publicError = new Err(this, originalError || null);
+
 	forEach(this.errorMap, (error, key) => {
 		if(!(error instanceof Err)) return;
 		const publicInfo = error.getPublicInfo();
 		if(!publicInfo) return;
 		set(publicError, 'errorMap.'+key, publicInfo);
 	});
+	this.cause = getCause(publicError.originalError, publicError.errorMap);
 	return publicError;
 };
 
