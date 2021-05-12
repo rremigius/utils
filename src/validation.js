@@ -814,7 +814,7 @@ Validation.safeParseNumber = function(variable) {
 	let asNumber = parseFloat(variable);
 	if(isNaN(asNumber)) return null;
 
-	return asNumber.toString() === variable ? variable : null;
+	return asNumber.toString() === variable ? asNumber : null;
 };
 Validation.isPrimitive = function(variable) {
 	return _.isString(variable) || _.isNumber(variable) || _.isBoolean(variable);
